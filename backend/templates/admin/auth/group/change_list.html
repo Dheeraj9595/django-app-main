@@ -1,0 +1,9 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <a class="btn btn-info" href="{% url 'auto_create_custom_groups' %}">Create Custom Groups</a>
+</div>
+{{ block.super }}
+{% endblock %}

@@ -1,0 +1,1601 @@
+{% extends "custom_base.html" %}
+{% load i18n static jazzmin admin_urls %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+{% load custom_filters %}
+
+{% block header %}
+    {% block main_head %}
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet"/>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&display=swap" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
+        <title>QR Request Form</title>
+        <!-- Font Awesome Icons -->
+        <link rel="stylesheet" href="{% static "vendor/fontawesome-free/css/all.min.css" %}">
+
+        <!-- Bootstrap and adminLTE -->
+        <link rel="stylesheet" href="{% static "vendor/adminlte/css/adminlte.min.css" %}" id="adminlte-css">
+
+        <!-- Bootswatch theme -->
+        {% if jazzmin_ui.theme.name != 'default' %}
+            <link rel="stylesheet" href="{{ jazzmin_ui.theme.src }}" id="jazzmin-theme" />
+        {% endif %}
+
+        {% if jazzmin_ui.dark_mode_theme %}
+            <link rel="stylesheet" href="{{ jazzmin_ui.dark_mode_theme.src }}" id="jazzmin-dark-mode-theme" media="(prefers-color-scheme: dark)"/>
+        {% endif %}
+
+        <!-- Custom fixes for django -->
+        <link rel="stylesheet" href="{% static "jazzmin/css/main.css" %}">
+
+
+        <!-- favicons -->
+        <link rel="shortcut icon" href="{% static jazzmin_settings.site_icon %}" type="image/png">
+        <link rel="icon" href="{% static jazzmin_settings.site_icon %}" sizes="32x32" type="image/png">
+
+        {% if jazzmin_settings.use_google_fonts_cdn %}
+        <!-- Google Font: Source Sans Pro -->
+        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+        {% endif %}
+        {% if jazzmin_settings.custom_css %}
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="{% static jazzmin_settings.custom_css %}">
+        {% endif %}
+    {% endblock %}
+{% endblock %}
+
+{% block body %}
+    {% block top_content %}
+        {% block sticky_header %}
+            {{block.super}}
+        {% endblock %}
+
+        {% block sidebar %}
+           {{block.super}}
+        {% endblock %}
+
+        {% block content %}
+            <div class="content-wrapper">
+                <section class="qr-req-head-section">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                {% if messages %}
+                                    {% for message in messages %}
+                                        {% if message.tags == 'error' %}
+                                            <div class="alert alert-danger alert-dismissible fade show" id="form_status_message_error" role="alert">
+                                                <p id="alertMessage"></p>
+                                                {{message}}
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                        {% else %}
+                                            <div class="alert alert-success alert-dismissible fade show" id="form_status_message_success" role="alert">
+                                                {{message}}
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                                
+                                <h2 class="cp-page-title" style="margin-top: 80px;">QR Request Form</h2>
+                                <p class="cp-page-desc">Please fill & submit the below details to request a QR</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="qr-req-form-section">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-md-11">
+                                <form class="cp-theme-form-wrap" id="qr_request_formset" action="{% url 'qr_request_form' %}" method="post">
+                                    {% csrf_token %}
+                                    {{ formset.management_form }}
+                                    <div class="qr_request_form_box" id="qr_request_form_box">
+                                        {% for form in formset %}
+                                            <div class="cp-theme-form qr_request_form" id="qr_request_form_1">
+                                                <div class="row mb-4 border-bottom pb-4">
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                            <label for="division_input" class="form-label">Division<span class="text-danger"> *</span></label>
+                                                            {{form.division}}
+                                                            <!-- <select class="form-select" id="division_input" aria-label="Default select example" name="division" required>
+                                                                <option value="" disabled selected>Select Division</option>
+                                                                {% for division in divisions %}
+                                                                    <option value="{{division.id}}">{{division.division}}</option>
+                                                                {% endfor %} -->
+                                                                <!-- <option value="other">Other</option> -->
+                                                            </select>
+                                                            <small class="cp-form-error">Please Select Division</small>
+                                                        </div>
+                                                    </div>
+                                                    <!-- <div class="mb-3">
+                                                        <label for="division_name_input"  id="division_name_label" class="form-label" hidden>Division Name</label>
+                                                        <input type="text" class="form-control" id="division_name_input" name="division_name" hidden>
+                                                    </div> -->
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                            <label for="local_brand_input" class="form-label">Local Brand<span class="text-danger"> *</span></label>
+                                                            {{form.local_brand}}
+                                                            <!-- <select class="form-select" id="local_brand_input" onclick="hidden_fields_show(this);" onchange="add_brand_code(this)" aria-label="Default select example" name="local_brand" required>
+                                                                <option value="" disabled selected>Select Local Brand</option>
+                                                                {% for local_brand in local_brands %}
+                                                                    <option value="{{local_brand.pk}}">{{local_brand.local_brand_name}}</option>
+                                                                {% endfor %}
+                                                                <option value="other">Other</option>
+                                                            </select> -->
+                                                            <small class="cp-form-error">Please Select Local Brand</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-12 local_brand_name_hidden_input" id="local_brand_input_1_1_hidden" hidden>
+                                                        <div class="form-group">
+                                                            <label for="local_brand_name_input" id="local_brand_name_label" class="form-label" >Local Brand Name<span class="text-danger"> *</span></label>
+                                                            {{form.local_brand_name}}
+                                                            <!-- <input type="text" class="form-control" id="local_brand_name_input" name="local_brand_name"> -->
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                            <label for="brand_code_input" class="form-label">Brand Code<span class="text-danger"> *</span></label>
+                                                            {{form.brand_code}}
+                                                            <!-- <input type="text" class="form-control" id="brand_code_input" name="brand_code" onchange="utm_campaign_value_add();" readonly required> -->
+                                                            <small class="cp-form-error">Please Enter Brand Code</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                            <label for="global_brand_name_input" class="form-label">Global Brand Name</label>
+                                                            {{form.global_brand_name}}
+                                                        </div>    
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-4 border-bottom pb-4">
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                        <label for="upc_ean_gtin_input" class="form-label">UPC/EAN/GTIN</label>
+                                                        {{form.upc_ean_gtin}}
+                                                        <small id="duplicate_gtin_number_warning_1_1" class="form-text text-danger duplicate_gtin_number_warning" hidden>Product with given gtin number already exists.</small>
+                                                        <!-- <input type="number" class="form-control" id="upc_ean_gtin_input" name="upc_ean_gtin" maxlength="14" oninput="fix_maxlength(this);" onchange="upc_ean_gtin_prefix_add(this);"> -->
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                        <label for="product_name_input" class="form-label">Product Name
+                                                            <span class="text-danger"> *</span>
+                                                            <span data-toggle="tooltip" data-placement="top" title="Product Name should be unique. We recommend matching your internal system naming convention where this is a SKU. For other channels, please use a descriptive name of the activity." class="cp-toolmore">
+                                                                <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 7C12.8284 7 13.5 6.32843 13.5 5.5C13.5 4.67157 12.8284 4 12 4C11.1716 4 10.5 4.67157 10.5 5.5C10.5 6.32843 11.1716 7 12 7ZM11 9C10.4477 9 10 9.44772 10 10C10 10.5523 10.4477 11 11 11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V10C13 9.44772 12.5523 9 12 9H11Z" fill="#000000"/></svg>
+                                                            </span>
+                                                        </label>
+                                                        {{form.product_name}}
+                                                        <!-- <input type="text" class="form-control" id="product_name_input" name="product_name" required> -->
+                                                        <small id="duplicate_product_name_warning_1_1" class="form-text text-danger duplicate_product_name_warning" hidden>Product with given name already exists.</small>
+                                                        <small class="cp-form-error">Please Enter Product Name</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-4 border-bottom pb-4">
+                                                    <div class="col-md-9 col-sm-12">
+                                                        <div class="form-group">
+                                                        <label for="product_description_input" class="form-label">Product Description
+                                                            <!-- <span class="text-danger"> *</span> -->
+                                                            <span data-toggle="tooltip" data-placement="top" title="Add here any additional information to help you identify this product." class="cp-toolmore">
+                                                                <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 7C12.8284 7 13.5 6.32843 13.5 5.5C13.5 4.67157 12.8284 4 12 4C11.1716 4 10.5 4.67157 10.5 5.5C10.5 6.32843 11.1716 7 12 7ZM11 9C10.4477 9 10 9.44772 10 10C10 10.5523 10.4477 11 11 11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V10C13 9.44772 12.5523 9 12 9H11Z" fill="#000000"/></svg>
+                                                            </span>
+                                                        </label>
+                                                        {{form.product_description}}
+                                                        <!-- <textarea class="form-control" id="product_description_input" rows="3" name="product_description" required></textarea> -->
+                                                        <small class="cp-form-error">Please Enter Product Description</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                        <label for="campaign_name_input" class="form-label">Campaign Name<span class="text-danger"> *</span></label>
+                                                        {% if selected_campaign %}
+                                                            <select name="form-0-campaign_name" id="campaign_name_input_1_1" class="form-select" onChange="tag1_value_add(this);" required>
+                                                                {% for values in campaigns %}
+                                                                <option value="{{ values.id }}" {% if values.id == selected_campaign.id %}selected{% endif %}>
+                                                                    {{values.campaign_name}}</option> 
+                                                                {% endfor %}
+                                                            </select>
+                                                        {% else %}
+                                                            {{form.campaign_name}}
+                                                        {% endif %}
+
+                                                        <!-- <input type="text" class="form-control" id="project_name_input" name="project_name" required> -->
+                                                        <small class="cp-form-error">Please Enter Campaign Name</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-4 border-bottom pb-4">
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                        <label for="tag1_input" class="form-label">Tag1
+                                                            <span class="text-danger"> *</span>
+                                                            <span data-toggle="tooltip" data-placement="top" title="This should be your campaign identifier, a single word with no spaces." class="cp-toolmore">
+                                                                <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 7C12.8284 7 13.5 6.32843 13.5 5.5C13.5 4.67157 12.8284 4 12 4C11.1716 4 10.5 4.67157 10.5 5.5C10.5 6.32843 11.1716 7 12 7ZM11 9C10.4477 9 10 9.44772 10 10C10 10.5523 10.4477 11 11 11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V10C13 9.44772 12.5523 9 12 9H11Z" fill="#000000"/></svg>
+                                                            </span>
+                                                        </label>
+                                                        {% if selected_campaign %}
+                                                            <input type="text" name="form-0-tag1" class="form-control" id="tag1_input_1_1" onkeyup="remove_space_and_make_lower_case_value(this);" onchange="utm_campaign_value_add(this);" readonly="readonly" required="required" value="{{selected_campaign.campaign_name|lower}}">
+                                                        {%else%}
+                                                            {{form.tag1}}
+                                                        {%endif%}
+                                                        <!-- <input type="text" class="form-control" id="tag1_input" name="tag1" onkeyup="remove_space_and_make_lower_case_value(this);" onchange="utm_campaign_value_add();" required> -->
+                                                        <small class="cp-form-error">Please Enter Tag1</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                        <label for="tag2_input" class="form-label">Tag2</label>
+                                                        {{form.tag2}}
+                                                        <!-- <input type="text" class="form-control" id="tag2_input" name="tag2" onkeyup="remove_space_and_make_lower_case_value(this);"> -->
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                        <label for="tag3_input" class="form-label">Tag3</label>
+                                                        {{form.tag3}}
+                                                        <!-- <input type="text" class="form-control" id="tag3_input" name="tag3" onkeyup="remove_space_and_make_lower_case_value(this);"> -->
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                        <label for="tag4_input" class="form-label">Tag4</label>
+                                                        {{form.tag4}}
+                                                        <!-- <input type="text" class="form-control" id="tag4_input" name="tag4" onkeyup="remove_space_and_make_lower_case_value(this);"> -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-4 border-bottom pb-4">
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                        <label for="code_position_input" class="form-label">Code Position<span class="text-danger"> *</span></label>
+                                                        {{form.code_position}}
+                                                        <!-- <select class="form-select" id="code_position_input" aria-label="Default select example" name="code_position" onchange="utm_content_value_add()" required>
+                                                            <option value="" disabled selected>Select Code Placement</option>
+                                                            {% for code_position_choice in code_position_choices %}
+                                                                <option value="{{code_position_choice.acronym}}">{{code_position_choice.value}}</option>
+                                                            {% endfor %}
+                                                        </select> -->
+                                                        <small class="cp-form-error">Please Select Code Position</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                        <label for="code_placement_input" class="form-label">Code Placement<span class="text-danger"> *</span></label>
+                                                        {{form.code_placement}}
+                                                        <!-- <select class="form-select" id="code_placement_input" aria-label="Default select example" name="code_placement" required>
+                                                            <option value="" disabled selected>Select code_placement</option>
+                                                            {% for code_placement_choice in code_placement_choices %}
+                                                                <option value="{{code_placement_choice}}">{{code_placement_choice}}</option>
+                                                            {% endfor %}
+                                                        </select> -->
+                                                        <small class="cp-form-error">Please Select Code Placement</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                        <label for="code_type_input" class="form-label">Code Type<span class="text-danger"> *</span></label>
+                                                        {{form.code_type}}
+                                                        <!-- <select class="form-select" id="code_type_input" aria-label="Default select example" name="code_type" required>
+                                                            <option value="" disabled selected>Select utm medium</option>
+                                                            {% for code_type_choice in code_type_choices %}
+                                                                <option value="{{code_type_choice}}">{{code_type_choice}}</option>
+                                                            {% endfor %}
+                                                        </select> -->
+                                                        <small class="cp-form-error">Please Select Code Type</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                        <label for="variant_input" class="form-label">
+                                                            Variant
+                                                            <span data-toggle="tooltip" data-placement="top" title="Use either the product variant where this is on pack or item description if other medium. No spaces are allowed. e.g. productfloral500ml." class="cp-toolmore">
+                                                                <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 7C12.8284 7 13.5 6.32843 13.5 5.5C13.5 4.67157 12.8284 4 12 4C11.1716 4 10.5 4.67157 10.5 5.5C10.5 6.32843 11.1716 7 12 7ZM11 9C10.4477 9 10 9.44772 10 10C10 10.5523 10.4477 11 11 11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V10C13 9.44772 12.5523 9 12 9H11Z" fill="#000000"/></svg>
+                                                            </span>
+                                                        </label>
+                                                        {{form.variant}}
+                                                        <!-- <input type="text" class="form-control" id="variant_input" name="variant" onkeyup="remove_space_and_make_lower_case_value(this);"> -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row row-sec-repeat mb-4 border-bottom pb-4">
+                                                    <div class="market_data_box_1 col-sm-12" id="market_data_box_1_1">
+                                                        <h4 id="date_warning" class="form-text-heading">
+                                                            #Default Market
+                                                        </h4>
+                                                        <div class="row">
+                                                            <div class="col-md-3 col-sm-12">
+                                                                <div class="form-group">
+                                                                <label for="market_input_1" class="form-label">Market
+                                                                    <span class="text-danger"> *</span>
+                                                                    <span data-toggle="tooltip" data-placement="top" title="The primary market where you expect scans to take place or the lead market for the campaign." class="cp-toolmore">
+                                                                        <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 7C12.8284 7 13.5 6.32843 13.5 5.5C13.5 4.67157 12.8284 4 12 4C11.1716 4 10.5 4.67157 10.5 5.5C10.5 6.32843 11.1716 7 12 7ZM11 9C10.4477 9 10 9.44772 10 10C10 10.5523 10.4477 11 11 11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V10C13 9.44772 12.5523 9 12 9H11Z" fill="#000000"/></svg>
+                                                                    </span>
+                                                                </label>
+                                        
+                                                                {% if selected_market %}
+                                                                    <select class="form-select" id="market_input_1_1" aria-label="Default select example" name="form-0-market" onchange="add_iso_code(this);" required>
+                                                                        <!-- <option value="{{selected_market.pk}}" selected>{{selected_market.market_name}}</option> -->
+                                                                        {% for market in markets %}
+                                                                        <option value="{{ market }}" {% if market.pk == selected_market.pk %}selected{% endif %}>
+                                                                            {{market.market_name}}</option> 
+                                                                        {% endfor %}
+                                                                    </select>
+                                                                {% else %}
+                                                                {{form.market}}
+                                                                {% endif %}
+                                                                <small class="cp-form-error">Please Select Market</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-3 col-sm-12">
+                                                                <div class="form-group">
+                                                                <label for="iso_input_1" class="form-label">ISO<span class="text-danger"> *</span></label>
+                                                                {% if selected_market %}
+                                                                <input type="text" name="form-0-market_iso_code" class="form-control iso_input" id="iso_input_1_1" onchange="utm_campaign_value_add(this);" readonly="readonly" required="required" value="{{selected_market.market_iso_code}}">
+                                                                    
+                                                                {%else%}
+                                                                    {{form.market_iso_code}}
+                                                                {%endif%}
+                                                                <!-- <input type="text" class="form-control" id="iso_input_1" name="market_iso_code" onchange="utm_campaign_value_add();" readonly> -->
+                                                                <small class="cp-form-error">Please Enter ISO</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6 col-sm-12">
+                                                                <div class="form-group">
+                                                                <label for="redirect_url_input_1" class="form-label">Redirect URL<span class="text-danger"> *</span></label>
+                                                                {{form.redirect_url}}
+                                                                <!-- <input type="url" class="form-control" id="redirect_url_input_1" name="redirect_url" required> -->
+                                                                <small class="cp-form-error">Please Enter Redirect URL</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4 col-sm-12">
+                                                                <div class="form-group">
+                                                                    <label for="utm_campaign_input" class="form-label">utm campaign<span class="text-danger"> *</span></label>
+                                                                    {% if selected_market %}
+                                                                    <input type="text" name="form-0-utm_campaign" class="form-control utm_campaign_input" id="utm_campaign_input_1_1" onchange="utm_tagged_link_value_add();" readonly="readonly" required="required" value="--{{selected_market.market_iso_code}}">
+                                                                    {%else%}
+                                                                    {{form.utm_campaign}}
+                                                                    {%endif%}
+                                                                    <small class="cp-form-error">Please Enter UTM Campaign</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4 col-sm-12">
+                                                                <div class="form-group">
+                                                                <label for="estimated_annual_units_input_1" class="form-label">
+                                                                    Estimated Annual Units<span class="text-danger"> *</span>
+                                                                    <span data-toggle="tooltip" data-placement="top" title="Where this is a product, enter the estimate annual unit sales. Where this not on pack, enter the estimated reach of the activity." class="cp-toolmore">
+                                                                        <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 7C12.8284 7 13.5 6.32843 13.5 5.5C13.5 4.67157 12.8284 4 12 4C11.1716 4 10.5 4.67157 10.5 5.5C10.5 6.32843 11.1716 7 12 7ZM11 9C10.4477 9 10 9.44772 10 10C10 10.5523 10.4477 11 11 11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V10C13 9.44772 12.5523 9 12 9H11Z" fill="#000000"/></svg>
+                                                                    </span>
+                                                                </label>
+                                                                {{form.estimated_annual_units}}
+                                                                <!-- <input type="number" class="form-control" id="estimated_annual_units_input_1" name="estimated_annual_units" required> -->
+                                                                <small class="cp-form-error">Please Enter Estimated Annual Units</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4 col-sm-12">
+                                                                <div class="form-group">
+                                                                <label for="expected_launch_date_input_1" class="form-label">Expected Launch Date
+                                                                    <span class="text-danger"> *</span>
+                                                                    <span data-toggle="tooltip" data-placement="top" title="When do you expect the products to be on shelf or activity to be live to consumers, use 1st of the month where exact date is unknown." class="cp-toolmore">
+                                                                        <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 7C12.8284 7 13.5 6.32843 13.5 5.5C13.5 4.67157 12.8284 4 12 4C11.1716 4 10.5 4.67157 10.5 5.5C10.5 6.32843 11.1716 7 12 7ZM11 9C10.4477 9 10 9.44772 10 10C10 10.5523 10.4477 11 11 11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V10C13 9.44772 12.5523 9 12 9H11Z" fill="#000000"/></svg>
+                                                                    </span>
+                                                                </label>
+                                                                {% if expected_lauch_date %}
+                                                                <input type="date" name="form-0-expected_launch_date" class="form-control expected_launch_date_input" id="expected_launch_date_input_1_1" required="required" value="{{expected_lauch_date}}">
+                                                                {%else%}
+                                                                {{form.expected_launch_date}}
+                                                                {%endif%}
+                                                                <!-- <input type="date" class="form-control" id="expected_launch_date_input_1" name="expected_launch_date" required> -->
+                                                                <small class="cp-form-error">Please Enter Expected Launch Date</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4 col-sm-12">
+                                                                <div class="form-group">
+                                                                <label for="experience_type_input_1" class="form-label">Experience Type<span class="text-danger"> *</span></label>
+                                                                {{form.experience_type}}
+                                                                <!-- <select class="form-select" id="experience_type_input_1" onclick="hidden_fields_show(this);" onchange="utm_content_value_add()" aria-label="Default select example" name="experience_type" required>
+                                                                    <option value="" disabled selected>Select Activity Type</option>
+                                                                    {% for activity in activities %}
+                                                                        <option value="{{activity.id}}">{{activity.experience_type}}</option>
+                                                                    {% endfor %}
+                                                                    <option value="other">Other</option>
+                                                                </select> -->
+                                                                <small class="cp-form-error">Please Select Experience Type</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-3 col-sm-12 experience_type_name_hidden_input" id="experience_type_input_1_1_hidden" hidden>
+                                                                <div class="form-group">
+                                                                <label for="experience_type_name_input_1" class="form-label">Exerience Type Name<span class="text-danger"> *</span></label>
+                                                                {{form.experience_type_name}}
+                                                                <!-- <input type="text" class="form-control" id="experience_type_name_input_1" name="experience_type_name" onchange="utm_content_value_add()" oninput="this.value=this.value.split(' ')[0]"> -->
+                                                                <small class="cp-form-error">Please Enter Experience Type Name</small>
+                                                                </div>
+                                                            </div>
+                                                            <!-- <div class="col-md-3 col-sm-12">
+                                                                <div class="form-group">
+                                                                <label for="utm_campaign_input_1" class="form-label">utm campaign<span class="text-danger"> *</span></label>
+                                                                {{form.utm_campaign}} -->
+                                                                <!-- <input type="text" class="form-control" id="utm_campaign_input_1" name="utm_campaign" readonly> -->
+                                                                <!-- <small class="cp-form-error">Please Enter Utm Campaign</small>
+                                                                </div>
+                                                            </div> -->
+                                                            <div class="col-md-3 col-sm-12">
+                                                                <div class="form-group">
+                                                                <label for="utm_content_input_1" class="form-label">utm content<span class="text-danger"> *</span></label>
+                                                                {{form.utm_content}}
+                                                                <!-- <input type="text" class="form-control" id="utm_content_input_1" name="utm_content" readonly> -->
+                                                                <small class="cp-form-error">Please Enter Utm Content</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6 col-sm-12">
+                                                                <div class="form-group">
+                                                                <label for="utm_tagged_link_input_1" class="form-label">utm tagged link<span class="text-danger"> *</span></label>
+                                                                {% if selected_market %}
+                                                                    <input type="url" name="form-0-utm_tagged_link" class="form-control utm_tagged_link_input" id="utm_tagged_link_input_1_1" readonly="readonly" required="required" value="?code_placement=&code_type=&utm_campaign=--{{selected_market.market_iso_code}}&utm_content=">
+                                                                {%else%}
+                                                                {{form.utm_tagged_link}}
+                                                                {%endif%}
+                                                                <!-- <input type="url" class="form-control" id="utm_tagged_link_input_1" name="utm_tagged_link" readonly> -->
+                                                                <small class="cp-form-error">Please Enter Utm Tagged Link</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-12">
+                                                        <div class="form-group">
+                                                        <button type="button" class="btn cp-btn-sec-small add_more_market_btn" id="add_more_market_btn_1">
+                                                            Add Market
+                                                        </button>
+                                                        <button type="button" class="btn cp-btn-danger-small remove_market_btn" id="remove_market_btn_1" hidden>
+                                                            Remove Market
+                                                        </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                        <label for="requested_by_input" class="form-label">Requested By<span class="text-danger"> *</span></label>
+                                                        {{form.requested_by}}
+                                                        <!-- <input type="text" class="form-control" id="exampleFormControlInput1" name="requested_by" required> -->
+                                                        <small class="cp-form-error">Please Enter Requested By</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                        <label for="exampleFormControlInput1" class="form-label">Date Requested<span class="text-danger"> *</span></label>
+                                                        {{form.date_requested}}
+                                                        <!-- <input type="date" class="form-control" id="exampleFormControlInput1" name="date_requested" required> -->
+                                                        <small class="cp-form-error">Please Enter Date Requested</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-12">
+                                                        <div class="form-group">
+                                                        <label for="requester_email_input" class="form-label">Requester Email<span class="text-danger"> *</span></label>
+                                                        {{form.requester_email}}
+                                                        <!-- <input type="text" class="form-control" id="requester_email_input" name="requester_email" required> -->
+                                                        <small class="cp-form-error">Please Enter Requester Email</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="col-sm-12 mb-3" id="add_more_products_button_box">
+                                        <button type="button" class="btn cp-btn-sec-small" id="add_more_qr_button" data-toggle="modal" data-target="#cp-anotherqrModal">Save & Add Another QR</button>
+                                        <button type="button" class="btn cp-btn-danger-small" id="remove_qr_button" hidden>
+                                            Remove QR
+                                        </button>
+                                    </div>
+                                    <div class="col-sm-12">
+                                        <button type="button" class="btn btn-outline-info cp-primary-btn" id="qr_request_submit button" data-toggle="modal" data-target="#cp-qrdesignModal">Submit & Generate QR Codes</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                 <!-- Modal Campaign-->
+                <div class="modal fade cp-gothrough-modal" id="cp-anotherqrModal" tabindex="-1" role="dialog" aria-labelledby="cp-anotherqrModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h5 class="modal-title" id="cp-anotherqrModalLabel">Create QR</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        </div>
+                        <div class="modal-body">
+                            <h6>Do you want to add to the same campaign or another?</h6>
+                            <div class="cp-gothrough-modal-btn-group">
+                                <a href="javascript:void(0);" id="add_qr_to_same_campaign_button" class="cp-gothrough-modal-btn" data-dismiss="modal" aria-label="Close">
+                                    <i class="fas fa-star"></i>
+                                    Add to the same campaign
+                                </a>
+                                <a href="javascript:void(0);" class="cp-gothrough-modal-btn cp-reload-page">
+                                    <i class="fas fa-star"></i>
+                                    Add to another campaign
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                 <!-- Modal Campaign-->
+                 <div class="modal fade cp-gothrough-modal" id="cp-qrdesignModal" tabindex="-1" role="dialog" aria-labelledby="cp-qrdesignModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h5 class="modal-title" id="cp-qrdesignModalLabel">Customize QR Code Design</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="error-hg" class="error-message"></p>
+                        <div class="cp-gothrough-modal-btn-group">
+                                <button type="button">
+                                    <a href="javascript:void(0);" class="cp-gothrough-modal-btn">
+                                        <i class="fas fa-qrcode"></i>
+                                        AQR
+                                    </a>
+                                </button>
+                                <button type="button" id="customize_qr_design_btn" onclick="submit_qr_request_form();">
+                                    <a href="javascript:void(0);" class="cp-gothrough-modal-btn">
+                                        <i class="fas fa-qrcode"></i>
+                                        Customize QR Design
+                                    </a>
+                                </button>
+                                <button type="button" id="use_existing_qr_design_template_btn">
+                                    <a  class="cp-gothrough-modal-btn">
+                                        <i class="fas fa-qrcode"></i>
+                                        Use Existing QR Design Template
+                                    </a>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>    
+        {% endblock %}
+    {% endblock %}
+
+    {% block custom_js %}
+        <script>
+                $('.cp-reload-page').click( function() {
+                    window.location.reload(true)
+                } );
+
+            function hidden_fields_show(field) {
+                var field_hidden_div = document.querySelector(`#${field.id}_hidden`);
+                var field_hidden_input = field_hidden_div.querySelector('input');
+                if (field.value === 'Other'){
+                    field_hidden_div.hidden = false
+                    field_hidden_input.required = true
+                }
+                else{
+                    field_hidden_div.hidden = true
+                    field_hidden_input.value = ""
+                    field_hidden_input.required = false
+                }
+            };
+
+            function fix_maxlength(field){
+                field.value = field.value.slice(0,field.maxLength);
+            };
+
+            function add_brand_code(local_brand_input){
+                var local_brand_input_arr = local_brand_input.id.split('_')
+                var count = local_brand_input_arr[local_brand_input_arr.length - 2]
+                var counter = local_brand_input_arr[local_brand_input_arr.length - 1]
+                var local_brands = {{ local_brands  | local_brands_queryset_as_json }}
+                var brand_code_input = document.querySelector(`#brand_code_input_${count}_${counter}`);
+                brand_code_input.value = ""
+                if (local_brand_input.value === 'Other'){
+                    brand_code_input.placeholder = "Enter Brand Code"
+                    brand_code_input.readOnly = false
+                }
+                else {
+                    for (var i = 0; i < local_brands.length; i++){
+                        if (local_brand_input.value == local_brands[i].pk){
+                            if (local_brands[i].brand_code != undefined){
+                                brand_code_input.value = local_brands[i].brand_code
+                                brand_code_input.readOnly = true
+                            }
+                        }
+                    }
+                    utm_campaign_value_add(brand_code_input)
+                }
+            };
+
+            function add_iso_code(market_input){
+                var market_input_arr = market_input.id.split('_')
+                var count = market_input_arr[market_input_arr.length - 2]
+                var counter = market_input_arr[market_input_arr.length - 1]
+                var market_selected_options = market_input.selectedOptions;
+                var market_data_box = document.querySelector(`#market_data_box_${count}_${counter}`);
+                var iso_code_input = market_data_box.querySelector(`.iso_input`);
+                var iso_code_value = ''
+                var markets = {{ markets | queryset_as_json }}
+                for (var i = 0; i < markets.length; i++){
+                    for (var j = 0; j < market_selected_options.length; j++){
+                        if (markets[i].market_name == market_selected_options[j].value){
+                            iso_code_value += markets[i].market_iso_code + ','
+                        }
+                    }
+                }
+                iso_code_input.value = iso_code_value.slice(0,-1)
+                utm_campaign_value_add(iso_code_input);
+            };
+
+            function upc_ean_gtin_prefix_add(upc_ean_gtin_input){
+                if (upc_ean_gtin_input.value.length < 14){
+                    var required_zeros = 14 - upc_ean_gtin_input.value.length
+                    var zero_string = ''
+                    for (var i = 0; i < required_zeros; i++){
+                        zero_string+='0'
+                    }
+                    upc_ean_gtin_input.value = zero_string + upc_ean_gtin_input.value
+                }
+                check_duplicate_gtin_number(upc_ean_gtin_input);
+            };
+
+            function add_comma_in_estimated_annual_units(estimated_annual_units_input){
+                let value = estimated_annual_units_input.value.replace(/,/g, "");
+                value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                // var numberString = estimated_annual_units_input.value.toString();
+                // var numberWithCommas = numberString.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                estimated_annual_units_input.value = value;
+            };
+
+            function correct_redirect_url(redirect_url_input){
+                let url = redirect_url_input.value.trim();
+                url = url.replace(/(https|:\/\/|:)/gi, "");
+                if (!url.startsWith("https://")) {
+                    url = "https://" + url;
+                }
+                redirect_url_input.value = url;
+                utm_tagged_link_value_add();
+            };
+
+            function submit_qr_request_form(){
+                var modal = document.getElementById('cp-qrdesignModal');
+                var division = document.getElementById('division_input_1_1');
+                var local_brand = document.getElementById('local_brand_input_1_1');
+                var product_name = document.getElementById('product_name_input_1_1');
+                var campaign_name = document.getElementById('campaign_name_input_1_1');
+                var tag = document.getElementById('tag1_input_1_1')
+                var code_position = document.getElementById('code_position_input_1_1');
+                var code_placement = document.getElementById('code_placement_input_1_1');
+                var code_type = document.getElementById('code_type_input_1_1')
+                var market =  document.getElementById('market_input_1_1')
+                var redirect_url = document.getElementById('redirect_url_input_1_1')
+                var annual_units = document.getElementById('estimated_annual_units_input_1_1')
+                var launch_date = document.getElementById('estimated_annual_units_input_1_1')
+                var experience_type = document.getElementById('experience_type_input_1_1')
+                var qr_request_formset = document.getElementById('qr_request_formset');
+                var requester_name = document.getElementById('requested_by_input_1_1');
+                var requester_email = document.getElementById('requester_email_input_1_1');
+                var error = document.getElementById("error-hg");
+                error.textContent = "";
+
+                division.classList.remove("error-highlight");
+                local_brand.classList.remove("error-highlight");
+                product_name.classList.remove("error-highlight");
+                campaign_name.classList.remove("error-highlight");
+                tag.classList.remove("error-highlight");
+                code_position.classList.remove("error-highlight");
+                code_placement.classList.remove("error-highlight");
+                code_type.classList.remove("error-highlight");
+                market.classList.remove("error-highlight");
+                redirect_url.classList.remove("error-highlight");
+                annual_units.classList.remove("error-highlight");
+                launch_date.classList.remove("error-highlight");
+                experience_type.classList.remove("error-highlight");
+                qr_request_formset.classList.remove("error-highlight");
+                requester_name.classList.remove("error-highlight");
+                requester_email.classList.remove("error-highlight");
+
+                var valid = true;
+
+                if (requester_name.value === ""){
+                    valid = false;
+                    error.textContent = "Requestor name is required.";
+                    requester_name.classList.add("error-highlight");
+                    alert("Requestor Name field is required.");
+                }
+                if (requester_email.value === ""){
+                    valid = false;
+                    error.textContent = "Requestor email is required.";
+                    requester_email.classList.add("error-highlight");
+                    alert("Requestor Email field is required.");
+                }
+                if (division.value === ""){
+                    valid = false;
+                    error.textContent = "Division field is required.";
+                    division.classList.add("error-highlight");
+                    alert("Division field is required.");
+                }
+                if (local_brand.value === ""){
+                    valid = false;
+                    error.textContent = "Local brand is required.";
+                    local_brand.classList.add("error-highlight");
+                    alert("Local brand field is required.");
+                }
+                if (product_name.value === ""){
+                    valid = false;
+                    error.textContent = "Product name is required.";
+                    product_name.classList.add("error-highlight");
+                    alert("Product name field is required.");
+                }
+                if (campaign_name.value === ""){
+                    valid = false;
+                    error.textContent = "Campaign name is required.";
+                    campaign_name.classList.add("error-highlight");
+                    alert("Campaign name field is required.");
+                }
+                if (tag.value === ""){
+                    valid = false;
+                    error.textContent = "Tag is required.";
+                    tag.classList.add("error-highlight");
+                    alert("Tag field is required.");
+                }
+                if (code_position.value === ""){
+                    valid = false;
+                    error.textContent = "Code Position is required.";
+                    code_position.classList.add("error-highlight");
+                    alert("Code Position field is required.");
+                }
+                if (code_placement.value === ""){
+                    valid = false;
+                    error.textContent = "Code Placement is required.";
+                    code_placement.classList.add("error-highlight");
+                    alert("Code Placement field is required.");
+                }
+                if (code_type.value === ""){
+                    valid = false;
+                    error.textContent = "Code type is required.";
+                    code_type.classList.add("error-highlight");
+                    alert("Code type field is required.");
+                }
+                if (market.value === ""){
+                    valid = false;
+                    error.textContent = "Market is required.";
+                    market.classList.add("error-highlight");
+                    alert("Market field is required.");
+                }
+                if (redirect_url.value === ""){
+                    valid = false;
+                    error.textContent = "Redirect Url is required.";
+                    redirect_url.classList.add("error-highlight");
+                    alert("Redirect Url field is required.");
+                }
+                if (annual_units.value === ""){
+                    valid = false;
+                    error.textContent = "Annual Unit is required.";
+                    annual_units.classList.add("error-highlight");
+                    alert("Annual Unit field is required.");
+                }
+                if (launch_date.value === ""){
+                    valid = false;
+                    error.textContent = "Expected Launch date is required.";
+                    launch_date.classList.add("error-highlight");
+                    alert("Expected Launch date field is required.");
+                }
+                if (experience_type.value === ""){
+                    valid = false;
+                    error.textContent = "Expected type is required.";
+                    experience_type.classList.add("error-highlight");
+                    alert("Expected type field is required.");
+                }
+                if (valid) {
+                    qr_request_formset.submit();
+                }
+                // if (qr_request_formset.checkValidity()) {
+                //     qr_request_formset.submit();
+                // }else {
+                //     // Show validation errors
+                //     for (let i = 0; i < qr_request_formset.elements.length; i++) {
+                //         const input = qr_request_formset.elements[i];
+                //         if (!input.checkValidity()) {
+                //             input.setCustomValidity("Please enter a valid " + input.name);
+                //         } else {
+                //             input.setCustomValidity("");
+                //         }
+                //     }
+                //     qr_request_formset.reportValidity();
+                // }
+            };
+
+            function remove_space_and_make_lower_case_value(str_input){
+                str_input.value = str_input.value.toLowerCase();
+                str_input.value = str_input.value.split(' ')[0]
+            };
+
+            function utm_campaign_value_add(input_field){
+                var input_field_arr = input_field.id.split('_')
+                var count = input_field_arr[input_field_arr.length - 2]
+                var counter = input_field_arr[input_field_arr.length - 1]
+                var brand_code_input = document.querySelector(`#brand_code_input_${count}_1`).value
+                var campaign_name_input = document.querySelector(`#tag1_input_${count}_1`).value
+                // var iso_input = document.querySelector(`#iso_input_${count}_${counter}`).value
+                // var utm_campaign_input = document.querySelector(`#utm_campaign_input_${count}_${counter}`)
+                // utm_campaign_input.value = `${campaign_name_input}-${brand_code_input}-${iso_input}`
+                
+                var market_data_inputs = document.querySelectorAll(`.market_data_box_${count}`)
+                for (var i = 0; i < market_data_inputs.length; i++){
+                    var iso_input = market_data_inputs[i].querySelector(`.iso_input`).value
+                    var utm_campaign_input = market_data_inputs[i].querySelector(`.utm_campaign_input`);
+                    utm_campaign_input.value = `${campaign_name_input}-${brand_code_input}-${iso_input}`
+                }
+                utm_tagged_link_value_add();
+            };
+
+            function check_duplicate_products(product_input){
+                var product_objs = {{ products | queryset_as_json }};
+                var product_input_arr = product_input.id.split('_');
+                var count = product_input_arr[product_input_arr.length - 2]
+                var counter = product_input_arr[product_input_arr.length - 1]
+                var duplicate_product_warning = document.querySelector(`#duplicate_product_name_warning_${count}_${counter}`);
+                // var submit_button = document.querySelector('#qr_request_submit button_div');
+                // console.log(submit_button);
+                duplicate_product_warning.hidden = true
+                // submit_button.disabled = false
+                for (var i = 0; i < product_objs.length; i++){
+                    if (product_objs[i].product_name == product_input.value){
+                        duplicate_product_warning.hidden = false
+                        // submit_button.disabled = true
+                    }
+                }
+            };
+
+            function check_duplicate_gtin_number(gtin_input){
+                var brand_objs = {{ brands | queryset_as_json }};
+                var gtin_input_arr = gtin_input.id.split('_');
+                var count = gtin_input_arr[gtin_input_arr.length - 2]
+                var counter = gtin_input_arr[gtin_input_arr.length - 1]
+                var duplicate_gtin_warning = document.querySelector(`#duplicate_gtin_number_warning_${count}_${counter}`);
+                // var submit_button = document.querySelector('#qr_request_submit button_div');
+                // console.log(submit_button);
+                duplicate_gtin_warning.hidden = true
+                // submit_button.disabled = false
+                for (var i = 0; i < brand_objs.length; i++){
+                    if (brand_objs[i].upc_ean_gtin == gtin_input.value){
+                        duplicate_gtin_warning.hidden = false
+                        // submit_button.disabled = true
+                    }
+                }
+            };
+
+            function utm_content_value_add(input_field){
+                var input_field_arr = input_field.id.split('_')
+                var count = input_field_arr[input_field_arr.length - 2]
+                var counter = input_field_arr[input_field_arr.length - 1]
+                var code_position_input = document.querySelector(`#code_position_input_${count}_${1}`).value
+                var market_data_inputs = document.querySelectorAll(`.market_data_box_${count}`)
+                for (var i = 0; i < market_data_inputs.length; i++){
+                    var experience_type = market_data_inputs[i].querySelector(`.experience_type_input`)
+                    if (experience_type.value!='Other'){
+                        // var experience_type = document.querySelector(`#experience_type_input_${i}`)
+                        var experience_type_value = experience_type.options[experience_type.selectedIndex].text
+                    }
+                    else{
+                        var experience_type_name_input = market_data_inputs[i].querySelector(`.experience_type_name_input`)
+                        var experience_type_value = experience_type_name_input.value
+                    };
+                    var utm_content_input = market_data_inputs[i].querySelector(`.utm_content_input`)
+                    utm_content_input.value = `${experience_type_value}-${code_position_input}`
+                }
+                utm_tagged_link_value_add();
+            };
+
+            function tag1_value_add(campaign_name_input){
+                var campaign_name_input_arr = campaign_name_input.id.split('_')
+                var count = campaign_name_input_arr[campaign_name_input_arr.length - 2]
+                // var counter = campaign_name_input_arr[campaign_name_input_arr.length - 1]
+                var tag1_input = document.querySelector(`#tag1_input_${count}_1`)
+                campaign_name = campaign_name_input.options[campaign_name_input.selectedIndex].text
+                campaign_name = campaign_name.toLowerCase();
+                campaign_name = campaign_name.replace(' ', '_');
+                tag1_input.value = campaign_name
+                utm_campaign_value_add(tag1_input);
+            };
+
+            function utm_tagged_link_value_add(){
+                for (var i = 1; i < formCount + 1; i++){
+                    var market_data_inputs = document.querySelectorAll(`.market_data_box_${i}`)
+                    var code_placement = document.querySelector(`#code_placement_input_${i}_${1}`).value
+                    var code_type = document.querySelector(`#code_type_input_${i}_${1}`).value
+                    var variant = document.querySelector(`#variant_input_${i}_${1}`).value
+                    for (var j = 0; j < market_data_inputs.length; j++){
+                        var redirect_url = market_data_inputs[j].querySelector(`.redirect_url_input`).value
+                        var utm_campaign = market_data_inputs[j].querySelector(`.utm_campaign_input`).value
+                        var utm_content = market_data_inputs[j].querySelector(`.utm_content_input`).value
+                        var utm_tagged_link = market_data_inputs[j].querySelector(`.utm_tagged_link_input`)
+                        var utm_tagged_link_value = `${redirect_url}?code_placement=${code_placement}&code_type=${code_type}&utm_campaign=${utm_campaign}&utm_content=${utm_content}`
+                        if (variant.length != 0){
+                            utm_tagged_link_value+=`&variant=${variant}`
+                        }
+                        utm_tagged_link_value = utm_tagged_link_value.split(' ').join('_')
+                        utm_tagged_link.value = utm_tagged_link_value
+                    }
+                }
+            };
+
+            function allow_integer_input(e){
+                var allowedChars = '0123456789';
+                function contains(stringValue, charValue) {
+                    return stringValue.indexOf(charValue) > -1;
+                }
+                var invalidKey = e.key.length === 1 && !contains(allowedChars, e.key)
+                || e.key === '.' && contains(e.target.value, '.');
+                invalidKey && e.preventDefault();
+            };
+
+            function add_new_market_box(add_button, remove_button){
+                var count_arr = add_button.id.split('_')
+                var count = count_arr[count_arr.length - 1]
+                var form_box = document.getElementById(`qr_request_form_${count}`);
+                var main_market_box = add_button.parentNode.parentNode.parentNode;
+                var counter = main_market_box.querySelectorAll(`.market_data_box_${count}`).length + 1;
+                var first_market_box = main_market_box.firstElementChild;
+                var first_market_box_fields = first_market_box.querySelectorAll('input, textarea, select');
+                var new_market_box = first_market_box.cloneNode(true);
+                var h4_element = new_market_box.querySelector('h4');
+                h4_element.remove();
+                new_market_box.setAttribute('class', `market_data_box_${count} col-sm-12`);
+                new_market_box.setAttribute('id', `market_data_box_${count}_${counter}`);
+                // var newFields = ``;
+                var market_buttons_box = add_button.parentNode.parentNode;
+                var new_market_box_fields = new_market_box.querySelectorAll('input, textarea, select');
+                for (let i = 0; i < new_market_box_fields.length; i++) {
+                    var new_market_box_field_id_arr = first_market_box_fields[i].id.split('_');
+                    var new_market_box_field_id = new_market_box_field_id_arr.slice(0, new_market_box_field_id_arr.length - 2).join('_')
+                    new_market_box_fields[i].id = `${new_market_box_field_id}_${count}_${counter}`
+                    new_market_box_fields[i].value = ''
+                };
+                var estimated_annual_units_input = new_market_box.querySelector(`#estimated_annual_units_input_${count}_${counter}`);
+                estimated_annual_units_input.addEventListener("keypress", allow_integer_input);
+                var number_inputs = new_market_box.querySelectorAll('input[type=number]');
+                number_inputs.forEach(function(number_input) {
+                    number_input.addEventListener("click",  allow_integer_input);
+                });
+                var default_market_experience_type_input = first_market_box.querySelector(`.experience_type_input`);
+                var experience_type_input = new_market_box.querySelector(`.experience_type_input`);
+                if (default_market_experience_type_input.value != 'Other'){
+                    experience_type_input.value = default_market_experience_type_input.value
+                }
+                var experience_type_name_hidden_input = new_market_box.querySelector(`.experience_type_name_hidden_input`);
+                experience_type_name_hidden_input.id = `experience_type_input_${count}_${counter}_hidden`
+                main_market_box.insertBefore(new_market_box, market_buttons_box);
+                utm_content_value_add(experience_type_input);
+                remove_button.hidden = false
+            };
+
+            const formContainer = document.getElementById('qr_request_form_box');
+            const addMoreProductsButton = document.getElementById('add_more_qr_button');
+            const removeProductButton = document.getElementById('remove_qr_button');
+            const addQRToSameCampaignButton = document.getElementById('add_qr_to_same_campaign_button');
+            const addMoreMarketButton = document.querySelector(`#add_more_market_btn_1`);
+            const removeMarketbutton = document.querySelector(`#remove_market_btn_1`);
+            const firstForm = document.getElementById('qr_request_form_1');
+            const firstformFields = firstForm.querySelectorAll('input, textarea, select');
+            let formCount = 1;
+            addQRToSameCampaignButton.addEventListener('click', () => {
+                formCount++;
+                var counter = 1
+                const newFormCode =
+                    `<div class="row mb-4 border-bottom pb-4">
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                                <label for="division_input" class="form-label">Division<span class="text-danger"> *</span></label>
+                                {{formset.empty_form.division}}
+                                <small class="cp-form-error">Please Select Division</small>
+                            </div>
+                        </div>                            
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                                <label for="local_brand_input" class="form-label">Local Brand<span class="text-danger"> *</span></label>
+                                {{formset.empty_form.local_brand}}
+                                <small class="cp-form-error">Please Select Local Brand</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12 local_brand_name_hidden_input" id="local_brand_input_1_1_hidden" hidden>
+                            <div class="form-group">
+                                <label for="local_brand_name_input" id="local_brand_name_label" class="form-label" >Local Brand Name<span class="text-danger"> *</span></label>
+                                {{formset.empty_form.local_brand_name}}
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                                <label for="brand_code_input" class="form-label">Brand Code<span class="text-danger"> *</span></label>
+                                {{formset.empty_form.brand_code}}
+                                <small class="cp-form-error">Please Enter Brand Code</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                                <label for="global_brand_name_input" class="form-label">Global Brand Name</label>
+                                {{formset.empty_form.global_brand_name}}
+                            </div>    
+                        </div>
+                    </div>
+                    <div class="row mb-4 border-bottom pb-4">
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                            <label for="upc_ean_gtin_input" class="form-label">UPC/EAN/GTIN</label>
+                            {{formset.empty_form.upc_ean_gtin}}
+                            <small id="duplicate_gtin_number_warning_1_1" class="form-text text-danger duplicate_gtin_number_warning" hidden>Product with given gtin number already exists.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                                <label for="product_name_input" class="form-label">Product Name
+                                    <span class="text-danger"> *</span>
+                                    <span data-toggle="tooltip" data-placement="top" title="Product Name should be unique. We recommend matching your internal system naming convention where this is a SKU. For other channels, please use a descriptive name of the activity." class="cp-toolmore">
+                                        <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 7C12.8284 7 13.5 6.32843 13.5 5.5C13.5 4.67157 12.8284 4 12 4C11.1716 4 10.5 4.67157 10.5 5.5C10.5 6.32843 11.1716 7 12 7ZM11 9C10.4477 9 10 9.44772 10 10C10 10.5523 10.4477 11 11 11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V10C13 9.44772 12.5523 9 12 9H11Z" fill="#000000"/></svg>
+                                    </span>
+                                </label>
+                                {{formset.empty_form.product_name}}
+                                <small id="duplicate_product_name_warning_1_1" class="form-text text-danger duplicate_product_name_warning" hidden>Product with given name already exists.</small>
+                                <small class="cp-form-error">Please Enter Product Name</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4 border-bottom pb-4">
+                        <div class="col-md-9 col-sm-12">
+                            <div class="form-group">
+                                <label for="product_description_input" class="form-label">Product Description
+                                    <span data-toggle="tooltip" data-placement="top" title="Add here any additional information to help you identify this product." class="cp-toolmore">
+                                        <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 7C12.8284 7 13.5 6.32843 13.5 5.5C13.5 4.67157 12.8284 4 12 4C11.1716 4 10.5 4.67157 10.5 5.5C10.5 6.32843 11.1716 7 12 7ZM11 9C10.4477 9 10 9.44772 10 10C10 10.5523 10.4477 11 11 11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V10C13 9.44772 12.5523 9 12 9H11Z" fill="#000000"/></svg>
+                                    </span>
+                                </label>
+                                {{formset.empty_form.product_description}}
+                                <small class="cp-form-error">Please Enter Product Description</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                            <label for="campaign_name_input" class="form-label">Campaign Name<span class="text-danger"> *</span></label>
+                            {{formset.empty_form.campaign_name}}
+                            <small class="cp-form-error">Please Enter Campaign Name</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4 border-bottom pb-4">
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                                <label for="tag1_input" class="form-label">Tag1
+                                    <span class="text-danger"> *</span>
+                                    <span data-toggle="tooltip" data-placement="top" title="This should be your campaign identifier, a single word with no spaces." class="cp-toolmore">
+                                        <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 7C12.8284 7 13.5 6.32843 13.5 5.5C13.5 4.67157 12.8284 4 12 4C11.1716 4 10.5 4.67157 10.5 5.5C10.5 6.32843 11.1716 7 12 7ZM11 9C10.4477 9 10 9.44772 10 10C10 10.5523 10.4477 11 11 11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V10C13 9.44772 12.5523 9 12 9H11Z" fill="#000000"/></svg>
+                                    </span>
+                                </label>
+                                {{formset.empty_form.tag1}}
+                                <small class="cp-form-error">Please Enter Tag1</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                                <label for="tag2_input" class="form-label">Tag2</label>
+                                {{formset.empty_form.tag2}}
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                                <label for="tag3_input" class="form-label">Tag3</label>
+                                {{formset.empty_form.tag3}}
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                            <label for="tag4_input" class="form-label">Tag4</label>
+                            {{formset.empty_form.tag4}}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4 border-bottom pb-4">
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                                <label for="code_position_input" class="form-label">Code Position<span class="text-danger"> *</span></label>
+                                {{formset.empty_form.code_position}}
+                                <small class="cp-form-error">Please Select Code Position</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                            <label for="code_placement_input" class="form-label">Code Placement<span class="text-danger"> *</span></label>
+                            {{formset.empty_form.code_placement}}
+                            <small class="cp-form-error">Please Select Code Placement</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                            <label for="code_type_input" class="form-label">Code Type<span class="text-danger"> *</span></label>
+                            {{formset.empty_form.code_type}}
+                            <!-- <select class="form-select" id="code_type_input" aria-label="Default select example" name="code_type" required>
+                                <option value="" disabled selected>Select utm medium</option>
+                                {% for code_type_choice in code_type_choices %}
+                                    <option value="{{code_type_choice}}">{{code_type_choice}}</option>
+                                {% endfor %}
+                            </select> -->
+                            <small class="cp-form-error">Please Select Code Type</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                            <label for="variant_input" class="form-label">
+                                Variant
+                                <span data-toggle="tooltip" data-placement="top" title="Use either the product variant where this is on pack or item description if other medium. No spaces are allowed. e.g. productfloral500ml." class="cp-toolmore">
+                                    <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 7C12.8284 7 13.5 6.32843 13.5 5.5C13.5 4.67157 12.8284 4 12 4C11.1716 4 10.5 4.67157 10.5 5.5C10.5 6.32843 11.1716 7 12 7ZM11 9C10.4477 9 10 9.44772 10 10C10 10.5523 10.4477 11 11 11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V10C13 9.44772 12.5523 9 12 9H11Z" fill="#000000"/></svg>
+                                </span>
+                            </label>
+                            {{formset.empty_form.variant}}
+                            <!-- <input type="text" class="form-control" id="variant_input" name="variant" onkeyup="remove_space_and_make_lower_case_value(this);"> -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row row-sec-repeat mb-4 border-bottom pb-4">
+                        <div class="market_data_box_1 col-sm-12" id="market_data_box_1_1">
+                            <h4 id="date_warning" class="form-text-heading">
+                                #Default Market
+                            </h4>
+                            <div class="row">
+                                <div class="col-md-3 col-sm-12">
+                                    <div class="form-group">
+                                    <label for="market_input_1" class="form-label">Market
+                                        <span class="text-danger"> *</span>
+                                        <span data-toggle="tooltip" data-placement="top" title="The primary market where you expect scans to take place or the lead market for the campaign." class="cp-toolmore">
+                                            <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 7C12.8284 7 13.5 6.32843 13.5 5.5C13.5 4.67157 12.8284 4 12 4C11.1716 4 10.5 4.67157 10.5 5.5C10.5 6.32843 11.1716 7 12 7ZM11 9C10.4477 9 10 9.44772 10 10C10 10.5523 10.4477 11 11 11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V10C13 9.44772 12.5523 9 12 9H11Z" fill="#000000"/></svg>
+                                        </span>
+                                    </label>
+                                    {{formset.empty_form.market}}
+                                    <!-- <select class="form-select" id="market_input_1" aria-label="Default select example" name="market" onchange="add_iso_code(this);" required> -->
+                                        <!-- <option value="" disabled selected>Select Market</option>
+                                        {% for market in markets %}
+                                            <option value="{{market.id}}">{{market.market_name}}</option>
+                                        {% endfor %}
+                                    </select> -->
+                                    <small class="cp-form-error">Please Select Market</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-sm-12">
+                                    <div class="form-group">
+                                    <label for="iso_input_1" class="form-label">ISO<span class="text-danger"> *</span></label>
+                                    {{formset.empty_form.market_iso_code}}
+                                    <!-- <input type="text" class="form-control" id="iso_input_1" name="market_iso_code" onchange="utm_campaign_value_add();" readonly> -->
+                                    <small class="cp-form-error">Please Enter ISO</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-sm-12">
+                                    <div class="form-group">
+                                    <label for="redirect_url_input_1" class="form-label">Redirect URL<span class="text-danger"> *</span></label>
+                                    {{formset.empty_form.redirect_url}}
+                                    <!-- <input type="url" class="form-control" id="redirect_url_input_1" name="redirect_url" required> -->
+                                    <small class="cp-form-error">Please Enter Redirect URL</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-12">
+                                    <div class="form-group">
+                                        <label for="utm_campaign_input" class="form-label">utm campaign<span class="text-danger"> *</span></label>
+                                        {{formset.empty_form.utm_campaign}}
+                                        <small class="cp-form-error">Please Enter UTM Campaign</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-12">
+                                    <div class="form-group">
+                                    <label for="estimated_annual_units_input_1" class="form-label">
+                                        Estimated Annual Units<span class="text-danger"> *</span>
+                                        <span data-toggle="tooltip" data-placement="top" title="Where this is a product, enter the estimate annual unit sales. Where this not on pack, enter the estimated reach of the activity." class="cp-toolmore">
+                                            <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 7C12.8284 7 13.5 6.32843 13.5 5.5C13.5 4.67157 12.8284 4 12 4C11.1716 4 10.5 4.67157 10.5 5.5C10.5 6.32843 11.1716 7 12 7ZM11 9C10.4477 9 10 9.44772 10 10C10 10.5523 10.4477 11 11 11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V10C13 9.44772 12.5523 9 12 9H11Z" fill="#000000"/></svg>
+                                        </span>
+                                    </label>
+                                    {{formset.empty_form.estimated_annual_units}}
+                                    <!-- <input type="number" class="form-control" id="estimated_annual_units_input_1" name="estimated_annual_units" required> -->
+                                    <small class="cp-form-error">Please Enter Estimated Annual Units</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-12">
+                                    <div class="form-group">
+                                    <label for="expected_launch_date_input_1" class="form-label">Expected Launch Date
+                                        <span class="text-danger"> *</span>
+                                        <span data-toggle="tooltip" data-placement="top" title="When do you expect the products to be on shelf or activity to be live to consumers, use 1st of the month where exact date is unknown." class="cp-toolmore">
+                                            <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 7C12.8284 7 13.5 6.32843 13.5 5.5C13.5 4.67157 12.8284 4 12 4C11.1716 4 10.5 4.67157 10.5 5.5C10.5 6.32843 11.1716 7 12 7ZM11 9C10.4477 9 10 9.44772 10 10C10 10.5523 10.4477 11 11 11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V10C13 9.44772 12.5523 9 12 9H11Z" fill="#000000"/></svg>
+                                        </span>
+                                    </label>
+                                    {{formset.empty_form.expected_launch_date}}
+                                    <!-- <input type="date" class="form-control" id="expected_launch_date_input_1" name="expected_launch_date" required> -->
+                                    <small class="cp-form-error">Please Enter Expected Launch Date</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-12">
+                                    <div class="form-group">
+                                    <label for="experience_type_input_1" class="form-label">Experience Type<span class="text-danger"> *</span></label>
+                                    {{formset.empty_form.experience_type}}
+                                    <!-- <select class="form-select" id="experience_type_input_1" onclick="hidden_fields_show(this);" onchange="utm_content_value_add()" aria-label="Default select example" name="experience_type" required>
+                                        <option value="" disabled selected>Select Activity Type</option>
+                                        {% for activity in activities %}
+                                            <option value="{{activity.id}}">{{activity.experience_type}}</option>
+                                        {% endfor %}
+                                        <option value="other">Other</option>
+                                    </select> -->
+                                    <small class="cp-form-error">Please Select Experience Type</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-sm-12 experience_type_name_hidden_input" id="experience_type_input_1_1_hidden" hidden>
+                                    <div class="form-group">
+                                    <label for="experience_type_name_input_1" class="form-label">Exerience Type Name<span class="text-danger"> *</span></label>
+                                    {{formset.empty_form.experience_type_name}}
+                                    <!-- <input type="text" class="form-control" id="experience_type_name_input_1" name="experience_type_name" onchange="utm_content_value_add()" oninput="this.value=this.value.split(' ')[0]"> -->
+                                    <small class="cp-form-error">Please Enter Experience Type Name</small>
+                                    </div>
+                                </div>
+                                <!-- <div class="col-md-3 col-sm-12">
+                                    <div class="form-group">
+                                    <label for="utm_campaign_input_1" class="form-label">utm campaign<span class="text-danger"> *</span></label>
+                                    {{formset.empty_form.utm_campaign}} -->
+                                    <!-- <input type="text" class="form-control" id="utm_campaign_input_1" name="utm_campaign" readonly> -->
+                                    <!-- <small class="cp-form-error">Please Enter Utm Campaign</small>
+                                    </div>
+                                </div> -->
+                                <div class="col-md-3 col-sm-12">
+                                    <div class="form-group">
+                                    <label for="utm_content_input_1" class="form-label">utm content<span class="text-danger"> *</span></label>
+                                    {{formset.empty_form.utm_content}}
+                                    <!-- <input type="text" class="form-control" id="utm_content_input_1" name="utm_content" readonly> -->
+                                    <small class="cp-form-error">Please Enter Utm Content</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-sm-12">
+                                    <div class="form-group">
+                                    <label for="utm_tagged_link_input_1" class="form-label">utm tagged link<span class="text-danger"> *</span></label>
+                                    {{formset.empty_form.utm_tagged_link}}
+                                    <!-- <input type="url" class="form-control" id="utm_tagged_link_input_1" name="utm_tagged_link" readonly> -->
+                                    <small class="cp-form-error">Please Enter Utm Tagged Link</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                            <button type="button" class="btn cp-btn-sec-small add_more_market_btn" id="add_more_market_btn_1">
+                                Add Market
+                            </button>
+                            <button type="button" class="btn cp-btn-danger-small remove_market_btn" id="remove_market_btn_1" hidden>
+                                Remove Market
+                            </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                            <label for="requested_by_input" class="form-label">Requested By<span class="text-danger"> *</span></label>
+                            {{formset.empty_form.requested_by}}
+                            <!-- <input type="text" class="form-control" id="exampleFormControlInput1" name="requested_by" required> -->
+                            <small class="cp-form-error">Please Enter Requested By</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                            <label for="exampleFormControlInput1" class="form-label">Date Requested<span class="text-danger"> *</span></label>
+                            {{formset.empty_form.date_requested}}
+                            <!-- <input type="date" class="form-control" id="exampleFormControlInput1" name="date_requested" required> -->
+                            <small class="cp-form-error">Please Enter Date Requested</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-12">
+                            <div class="form-group">
+                            <label for="requester_email_input" class="form-label">Requester Email<span class="text-danger"> *</span></label>
+                            {{formset.empty_form.requester_email}}
+                            <!-- <input type="text" class="form-control" id="requester_email_input" name="requester_email" required> -->
+                            <small class="cp-form-error">Please Enter Requester Email</small>
+                            </div>
+                        </div>
+                    </div>`
+                var formCountInput = document.querySelector('input[name="form-TOTAL_FORMS"]');
+                var new_form_div = document.createElement('div');
+                new_form_div.classList.add('cp-theme-form');
+                new_form_div.id = `qr_request_form_${formCount}`
+                new_form_div.innerHTML = newFormCode
+                var newformFields = new_form_div.querySelectorAll('input, textarea, select');
+                var market_data_boxes = new_form_div.querySelectorAll('.market_data_box_1');
+                var add_more_market_btn = new_form_div.querySelector('.add_more_market_btn');
+                var remove_market_btn = new_form_div.querySelector('.remove_market_btn');
+                add_more_market_btn.id = `add_more_market_btn_${formCount}`
+                remove_market_btn.id = `remove_market_btn_${formCount}`
+                n = newformFields.length
+                for (let i = 0; i < n; i++) {
+                    var new_form_field_id_arr = newformFields[i].id.split('_')
+                    var new_form_field_id = new_form_field_id_arr.slice(0, new_form_field_id_arr.length - 2).join('_')
+                    if (new_form_field_id_arr[new_form_field_id_arr.length - 1] == 1){
+                        newformFields[i].id = `${new_form_field_id}_${formCount}_${1}`;
+                    }
+                    else{
+                        newformFields[i].id = `${new_form_field_id}_${formCount}_${counter}`;
+                    }
+                    new_form_field_name_arr = newformFields[i].name.split('-')
+                    newformFields[i].name = `form-${formCount -1}-${new_form_field_name_arr[new_form_field_name_arr.length - 1]}`
+                    if (newformFields[i].name.includes('product_name') || newformFields[i].name.includes('upc_ean_gtin') || newformFields[i].name.includes('product_description') || newformFields[i].name.includes('market') || newformFields[i].name.includes('iso_code') || newformFields[i].name.includes('redirect_url') || newformFields[i].name.includes('utm_campaign') || newformFields[i].name.includes('estimated_annual_units') || newformFields[i].name.includes('expected_launch_date') || newformFields[i].name.includes('experience_type') || newformFields[i].name.includes('utm_content') || newformFields[i].name.includes('utm_tagged_link')){
+                        newformFields[i].value = '';
+                    }
+                    else{
+                        newformFields[i].value = firstformFields[i].value
+                    }
+                }
+
+                for (var i = 0; i < market_data_boxes.length; i++){
+                    if (i==0){
+                        market_data_boxes[i].setAttribute('class', `market_data_box_${formCount} col-sm-12`);
+                        market_data_boxes[i].setAttribute('id', `market_data_box_${formCount}_${counter}`);
+                    }else{
+                        market_data_boxes[i].remove();
+                    }
+                }
+
+                var local_brand_name_hidden_input = new_form_div.querySelector('.local_brand_name_hidden_input');
+                local_brand_name_hidden_input.id = `local_brand_input_${formCount}_1_hidden`
+                var duplicate_product_name_warning = new_form_div.querySelector('.duplicate_product_name_warning')
+                duplicate_product_name_warning.id = `duplicate_product_name_warning_${formCount}_${counter}`
+                var duplicate_gtin_number_warning = new_form_div.querySelector('.duplicate_gtin_number_warning');
+                duplicate_gtin_number_warning.id = `duplicate_gtin_number_warning_${formCount}_${counter}`
+                var experience_type_name_hidden_input = new_form_div.querySelector(`.experience_type_name_hidden_input`);
+                experience_type_name_hidden_input.id = `experience_type_input_${formCount}_${counter}_hidden`
+                
+                var estimated_annual_units_inputs = new_form_div.querySelectorAll('.estimated_annual_units_input');
+                estimated_annual_units_inputs.forEach(function(estimated_annual_units_input) {
+                    estimated_annual_units_input.addEventListener("keypress",  allow_integer_input);
+                });
+                var number_inputs = new_form_div.querySelectorAll('input[type=number]');
+                number_inputs.forEach(function(number_input) {
+                    number_input.addEventListener("keypress",  allow_integer_input);
+                });
+                
+                add_more_market_btn.addEventListener('click', () => {
+                    add_new_market_box(add_more_market_btn, remove_market_btn);
+                });
+
+                remove_market_btn.addEventListener('click', () => {
+                    var count_arr = remove_market_btn.id.split('_');
+                    var count = count_arr[count_arr.length - 1];
+                    var market_data_boxes = document.querySelectorAll(`.market_data_box_${count}`);
+                    var latest_market_data_box = market_data_boxes[market_data_boxes.length - 1];
+                    latest_market_data_box.parentNode.removeChild(latest_market_data_box);
+                    var market_data_boxes = document.querySelectorAll(`.market_data_box_${count}`);
+                    var counter = market_data_boxes.length;
+                    if (counter == 1 && remove_market_btn.hidden == false){
+                        remove_market_btn.hidden = true
+                    };
+                });
+
+                removeProductButton.hidden = false
+                if (formCount == 4){
+                    addMoreProductsButton.hidden = true
+                }
+                formCountInput.value = formCount
+                formContainer.appendChild(new_form_div);
+            });
+            
+            removeProductButton.addEventListener('click', () => {
+                qr_request_forms = document.querySelectorAll('.qr_request_form');
+                var latest_qr_request_form = qr_request_forms[qr_request_forms.length - 1];
+                latest_qr_request_form.parentNode.removeChild(latest_qr_request_form);
+                formCount--;
+                if (formCount <=4){
+                    addMoreProductsButton.hidden = false
+                }
+                if (formCount == 1 && removeProductButton.hidden == false){
+                    removeProductButton.hidden = true
+                }
+            });
+
+            addMoreMarketButton.addEventListener('click', () => {
+                add_new_market_box(addMoreMarketButton, removeMarketbutton);
+            });
+
+            removeMarketbutton.addEventListener('click', () => {
+                var count_arr = removeMarketbutton.id.split('_');
+                var count = count_arr[count_arr.length - 1];
+                var market_data_boxes = document.querySelectorAll(`.market_data_box_${count}`);
+                var latest_market_data_box = market_data_boxes[market_data_boxes.length - 1];
+                latest_market_data_box.parentNode.removeChild(latest_market_data_box);
+                var market_data_boxes = document.querySelectorAll(`.market_data_box_${count}`);
+                var counter = market_data_boxes.length;
+                if (counter == 1 && removeMarketbutton.hidden == false){
+                    removeMarketbutton.hidden = true
+                };
+            });
+
+            $(document).ready(function() {
+                const date_requested_input = document.getElementById('date_requested_input_1_1');
+                const first_campaign_input = document.getElementById('project_name_input_1_1');
+                date_requested_input.value = "{{current_date}}";
+                var campaign_id = "{{campaign_id}}";
+                if (campaign_id != 'None'){
+                    first_campaign_input.value = "{{campaign_id}}";
+                    var tag1_input = document.getElementById('tag1_input_1_1');
+                    tag1_input.value = first_campaign_input.options[first_campaign_input.selectedIndex].text
+                }
+                var first_estimated_annual_units_input = document.getElementById('estimated_annual_units_input_1_1');
+                first_estimated_annual_units_input.addEventListener("keypress", allow_integer_input);
+                var number_inputs = document.querySelectorAll('input[type=number]');
+                number_inputs.forEach(function(number_input) {
+                    number_input.addEventListener("keypress",  allow_integer_input);
+                });
+                //     $('#market_input').select2();
+                //     // $('#division_input').select2();
+                //     // $('#local_brand_input').select2();
+                //     // $('#experience_type_input').select2();
+            });
+
+        </script>
+        <script>
+            var form_status_message_success = document.getElementById('form_status_message_success');
+            var form_status_message_error = document.getElementById('form_status_message_error');
+            if (form_status_message_success){
+                setTimeout(function() {
+                form_status_message_success.hidden=true;
+                }, 5000);
+            };
+            if (form_status_message_error){
+                setTimeout(function() {
+                form_status_message_error.hidden=true;
+                }, 5000);
+            };
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+        <script>
+            var header = $('.header-fixed');
+
+            $(window).scroll(function(e){
+                if(header.offset().top !== 0){
+                    if(!header.hasClass('shadow')){
+                        header.addClass('shadow');
+                    }
+                }else{
+                    header.removeClass('shadow');
+                }
+            });
+
+            $(function () {
+                $('[data-toggle="tooltip"]').tooltip()
+            })
+        </script>
+
+        <script>
+            document.getElementById("use_existing_qr_design_template_btn").addEventListener("click", function() {
+                var brand = document.getElementById('brand_code_input_1_1');
+                var product_name = document.getElementById('product_name_input_1_1');
+                var product_description = document.getElementById('product_description_input_1_1');
+                var campaign_name = document.getElementById('campaign_name_input_1_1');
+                var tag = document.getElementById('tag1_input_1_1')
+                var code_position = document.getElementById('code_position_input_1_1');
+                var requester_name = document.getElementById('requested_by_input_1_1');
+                var requester_email = document.getElementById('requester_email_input_1_1');
+                // URL to which you want to send the POST request
+                const url = "{% url 'productview' %}"
+                // Data to be sent as the POST request payload
+            
+                var error = document.getElementById("error-hg");
+                error.textContent = "";
+
+                brand.classList.remove("error-highlight");
+                product_name.classList.remove("error-highlight");
+                campaign_name.classList.remove("error-highlight");
+                tag.classList.remove("error-highlight");
+                code_position.classList.remove("error-highlight");
+                requester_name.classList.remove("error-highlight");
+                requester_email.classList.remove("error-highlight");
+                
+                var valid = true;
+
+                if (requester_name.value === ""){
+                    valid = false;
+                    error.textContent = "Requestor name is required.";
+                    requester_name.classList.add("error-highlight");
+                    alert("Requestor Name field is required.");
+                }
+                if (requester_email.value === ""){
+                    valid = false;
+                    error.textContent = "Requestor email is required.";
+                    requester_email.classList.add("error-highlight");
+                    alert("Requestor Email field is required.");
+                }
+                if (brand.value === ""){
+                    valid = false;
+                    error.textContent = "Brand is required.";
+                    brand.classList.add("error-highlight");
+                    alert("Brand field is required.");
+                }
+                if (product_name.value === ""){
+                    valid = false;
+                    error.textContent = "Product name is required.";
+                    product_name.classList.add("error-highlight");
+                    alert("Product name field is required.");
+                }
+                if (campaign_name.value === ""){
+                    valid = false;
+                    error.textContent = "Campaign name is required.";
+                    campaign_name.classList.add("error-highlight");
+                    alert("Campaign name field is required.");
+                }
+                if (tag.value === ""){
+                    valid = false;
+                    error.textContent = "Tag is required.";
+                    tag.classList.add("error-highlight");
+                    alert("Tag field is required.");
+                }
+                if (code_position.value === ""){
+                    valid = false;
+                    error.textContent = "Code Position is required.";
+                    code_position.classList.add("error-highlight");
+                    alert("Code Position field is required.");
+                }
+                if (valid) {
+                    
+                    const data = {
+
+                    'product_name':product_name.value,
+                    'brand':brand.value,
+                    'campaign_name':campaign_name.value,
+                    'product_description':product_description.value,
+                    'evrythng_tag_1':tag.value,
+                    'code_position':code_position.value,
+                    'requested_by':requester_name.value,
+                    'requester_email':requester_email.value
+
+                    };
+
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', url, true);
+                    var csrfToken = getCookie('csrftoken');
+                    xhr.setRequestHeader('X-CSRFToken', csrfToken);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.onload = function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        // Successful response
+                        const responseData = JSON.parse(xhr.responseText);
+                        console.log('Response:', responseData);
+                        window.location.href = "{% url 'qr_code_templates' %}?product_name=" + responseData.product_id;
+                    } else {
+                        // Request failed
+                        console.error('Request failed with status:', xhr.status);
+                    }
+                    };
+
+                    xhr.onerror = function() {
+                    // Handle network errors
+                    console.error('Network error occurred');
+                    };
+
+                    xhr.send(JSON.stringify(data));
+                    console.log(data)
+                }
+                
+            });
+
+
+            function getCookie(name) {
+                var value = "; " + document.cookie;
+                var parts = value.split("; " + name + "=");
+                if (parts.length == 2) return parts.pop().split(";").shift();
+            }
+        </script>
+
+
+
+    {% endblock %}
+{% endblock %}

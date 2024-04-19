@@ -1,0 +1,150 @@
+{% load i18n static jazzmin admin_urls %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&display=swap" rel="stylesheet">
+     <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="{% static "vendor/fontawesome-free/css/all.min.css" %}">
+    <link rel="stylesheet" href="{% static 'css/custom_admin.css' %}">
+    <title>Dashboard</title>
+</head>
+<body class="landing-body" id="cp-landing-body">
+    <!-- <div class="fade-overlay"></div> -->
+    <header class="header-fixed">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-4 col-sm-12">
+                    <a href="javascript:void(0);" class="cp-brand-name">
+                        <img src="{% static "/images/logo.png" %}" alt="CEC Logo" title="CEC Logo">
+                    </a>
+                </div>
+                <div class="col-md-8 col-sm-12">
+                    <ul class="ml-auto list-inline cp-top-nav">
+                        <!-- <li class="list-inline-item">
+                            <a href="{% url 'admin:password_change' %}" class="cp-top-nav-item">Change Password</a>
+                        </li> -->
+                        <li class="list-inline-item">
+                            <a href="{% jazzy_admin_url request.user request.current_app|default:"admin" %}" class="cp-top-nav-item">My Profile</a>
+                        </li>
+                        <li class="list-inline-item cp-item-logout">
+                            <a href="{% url 'admin:logout' %}" class="cp-top-nav-item">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <section class="cp-landing-section">
+        <div class="container">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-success alert-dismissible fade show" id="form_status_message" role="alert">
+                        {{message}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="cp-landing-page-head">
+                        <!-- <img src="/static/images/CEC_Logo.jpg" alt="Logo" title="Connected Packs"> -->
+                        <span class="cp-page-desc"><strong>Welcome!</strong>Please make your selection below</span>
+                    </div>
+                </div>
+            </div> 
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="container-card">
+                        <div class="card skew glow">
+                            <div class="content">
+                                <h2>01</h2>
+                                <h3>Planning and Forecasting</h3>
+                                <p></p>
+                                <a href="{% url 'planning_view' %}">View</a>
+                            </div>
+                        </div>
+                        <div class="card skew glow">
+                            <div class="content">
+                                <h2>02</h2>
+                                <h3>Campaigns</h3>
+                                <p>Create & Manage Campaigns</p>
+                                <a href="{% url 'campaign_form' %}" class="trigger-overlay">Create</a>
+                                <a href="{% url 'admin:campaigns_campaign_changelist' %}">Manage</a>
+                            </div>
+                        </div>
+                        <div class="card skew glow">
+                            <div class="content">
+                                <h2>03</h2>
+                                <h3>QR Codes</h3>
+                                <p>Create & Manage QR Codes</p>
+                                <a href="javascript:void(0);" class="trigger-overlay" data-toggle="modal" data-target="#cp-landingModalCampaingn">Create</a>
+                                <a href="{% url 'manage_qr' %}">Manage</a>
+                            </div>
+                        </div>
+                        <div class="card skew glow">
+                            <div class="content">
+                                <h2>04</h2>
+                                <h3>Performance Reporting</h3>
+                                <p></p>
+                                <a href="{% url 'reporting_view' %}">View</a>
+                                <!-- <a href="{% url 'qr_reporting_view' %}">  QR  </a> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </section>
+    <footer class="landing-footer">
+        Copyright © 2023. All rights reserved.
+    </footer>
+    <!-- Modal Campaign-->
+    <div class="modal fade cp-gothrough-modal" id="cp-landingModalCampaingn" tabindex="-1" role="dialog" aria-labelledby="cp-landingModalCampaingnLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <!-- <h5 class="modal-title" id="cp-landingModalCampaingnLabel">Manage Campaign/QR</h5> -->
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+                <div class="cp-gothrough-modal-btn-group">
+                    <a href="{% url 'admin:campaigns_campaign_changelist' %}" class="cp-gothrough-modal-btn">
+                        <i class="fas fa-qrcode"></i>
+                        Add a code to an existing campaign?
+                    </a>
+                    <a href="{% url 'campaign_form' %}" class="cp-gothrough-modal-btn">
+                        <i class="fas fa-qrcode"></i>
+                        Create a code for a new campaign
+                    </a>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    <script src="{% static "vendor/bootstrap/js/bootstrap.min.js" %}"></script>
+    <script>
+        setTimeout(function() {
+            document.getElementById('form_status_message').classList.remove('show');
+        }, 5000);
+    </script>
+</body>
+</html>

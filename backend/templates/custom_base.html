@@ -1,0 +1,260 @@
+{% load i18n static jazzmin admin_urls %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+{% block header %}
+    <head>
+        {% block main_head %}
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Custom Navbar</title>
+        {% endblock %}
+        
+        {% block extrastyle %} {% endblock %}
+        
+        {% block extrahead %} {% endblock %}
+    </head>
+{% endblock %}
+
+{% block body %}
+    <body class="custom-form-body">
+        {% block top_content %}
+            <div class="wrapper">
+                {% block sticky_header %}
+                    <header class="header-fixed">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-4 col-sm-12">
+                                    <a href="{% url 'custom_admin_dashboard' %}" class="cp-brand-name">
+                                        <img src="{% static "/images/logo.png" %}" alt="CEC Logo" title="CEC Logo">
+                                    </a>
+                                </div>
+                                <div class="col-md-8 col-sm-12">
+                                    <ul class="ml-auto list-inline cp-top-nav">
+                                        <!-- <li class="list-inline-item">
+                                            <a href="{% url 'admin:password_change' %}" class="cp-top-nav-item">Change Password</a>
+                                        </li> -->
+                                        <li class="list-inline-item">
+                                            <a href="{% jazzy_admin_url request.user request.current_app|default:"admin" %}" class="cp-top-nav-item">My Profile</a>
+                                        </li>
+                                        <li class="list-inline-item cp-item-logout">
+                                            <a href="{% url 'admin:logout' %}" class="cp-top-nav-item">Logout</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+                {% endblock %}
+                <div class="cp-page-inner-box">
+                {% block sidebar %}
+                    {% if jazzmin_settings.show_sidebar %}
+                        {% get_side_menu as side_menu_list %}
+
+                        <aside class="main-sidebar elevation-4 cp-admin-sidebar {{ jazzmin_ui.sidebar_classes }}" id="jazzy-sidebar">
+                            <a href="{% url 'admin:index' %}" class="brand-link d-none {{ jazzmin_ui.brand_classes }}" id="jazzy-logo">
+                                <img src="{% static jazzmin_settings.site_logo %}" alt="{{ jazzmin_settings.site_header }} Logo" class="{{ jazzmin_settings.site_logo_classes }} brand-image elevation-3" style="opacity: .8">
+                                <span class="brand-text font-weight-light">{{ jazzmin_settings.site_brand }}</span>
+                            </a>
+
+                            <div class="sidebar">
+                                <div class="user-panel mt-3 pb-3 mb-3 d-none">
+                                    <div class="image">
+                                        {% if jazzmin_settings|has_jazzmin_setting:"user_avatar" %}
+                                            <img src="{% get_user_avatar request.user %}" width="160px" class="img-circle elevation-2" alt="User Image">
+                                        {% else %}
+                                            <i class="fas fa-inverse user-profile fa-user-circle"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="info">
+                                        {% if perms|can_view_self %}
+                                            <a href="{% jazzy_admin_url request.user request.current_app|default:"admin" %}" class="d-block">{{ request.user }}</a>
+                                        {% else %}
+                                            <span class="d-block" style="color: white;">{{ request.user }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <nav class="mt-2">
+                                    <ul class="nav nav-pills nav-sidebar flex-column {{ jazzmin_ui.sidebar_list_classes }}" data-widget="treeview" role="menu" data-collapsible="false">
+
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:index' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-th-large"></i>
+                                                <p>{% trans 'Dashboard' %}</p>
+                                            </a>
+                                        </li>
+
+                                        <!-- {% if jazzmin_settings.navigation_expanded %} -->
+                                        <li class="nav-header">Accounts</li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:account_emailaddress_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Email addresses</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-header">Analytics</li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:analytics_googleanalytics_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Google Analytics</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-header">Authentication and Authorization</li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:auth_group_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-users"></i> <p>Groups</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:auth_user_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-user"></i> <p>Users</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-header">Brands</li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:brands_brand_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Brands</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:brands_division_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Divisions</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:brands_localbrand_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Local Brands</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-header">Campaigns</li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:campaigns_campaignadditionaldetails_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Campaign additional details</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:campaigns_campaign_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Campaigns</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-header">Products</li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:products_activity_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Activities</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:products_market_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Markets</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:products_productmarketdetails_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Product market details</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:products_product_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Products</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:products_qrcodecutomizationtemplates_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>QR Code Cutomization Templates</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:products_salesdata_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Sales Data</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-header">Sites</li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:sites_site_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Sites</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-header">Social Accounts</li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:socialaccount_socialaccount_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Social accounts</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:socialaccount_socialtoken_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Social application tokens</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'admin:socialaccount_socialapp_changelist' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-circle"></i> <p>Social applications</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-header">Custom Forms</li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'qr_request_form' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-qrcode"></i> <p>QR Request Form</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'qr_code_customize_form' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-qrcode"></i> <p>QR Code Customize Form</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'sales_data_form' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-database"></i> <p>Sales Data Form</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{% url 'campaign_form' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-star"></i> <p>Campaign Form</p>
+                                            </a>
+                                        </li>
+                                        <!-- <li class="nav-item">
+                                            <a href="{% url 'planning_dashboard_details_form' %}" class="nav-link">
+                                                <i class="nav-icon fas fa-star"></i> <p>Planning Dashboard Details Form</p>
+                                            </a>
+                                        </li> -->
+                                        <!-- {% else %}
+                                        {% for app in side_menu_list %}
+                                            <li class="nav-item has-treeview">
+                                                <a href="#" class="nav-link">
+                                                    <i class="nav-icon {{ app.icon }}"></i>
+                                                    <p>{{ app.name|truncatechars:21 }} <i class="fas fa-angle-left right"></i></p>
+                                                </a>
+                                                <ul class="nav nav-treeview" style="display: none;">
+                                                    {% for model in app.models %}
+                                                        <li class="nav-item">
+                                                            <a href="{% if model.url %}{{ model.url }}{% else %}javascript:void(0){% endif %}" class="nav-link">
+                                                                <i class="nav-icon {{ model.icon }}"></i>
+                                                                <p>{{ model.name }}</p>
+                                                            </a>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </li>
+                                            {% endfor %} -->
+                                            <!-- {% endif %} -->
+                                    </ul>
+                                </nav>
+                            </div>
+                        </aside>
+                    {% endif %}
+                {% endblock %}
+                </div>
+                {% block content %}
+                {% endblock %}
+            </div>
+        {% endblock %}
+
+        {% block custom_js %}
+        {% endblock %}
+    </body> 
+{% endblock %}
+</body>
+</html>

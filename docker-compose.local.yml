@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+  connected_packs_db:
+    restart: always
+    image: postgres
+    container_name: psql
+    env_file: ./.env
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - connected_packs_db_volume:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    restart: always
+    container_name: web
+    build:
+      context: .
+      dockerfile: ./config/web/Dockerfile
+    env_file: ./.env
+    command: bash -c "python manage.py migrate && python manage.py collectstatic --noinput --clear && gunicorn --bind=0.0.0.0 --workers 4 --timeout 600 backend.wsgi:application"
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - connected_packs_db
+
+  redis:
+    restart: always
+    image: redis
+    container_name: redis
+    command: redis-server --requirepass redisserver
+    env_file: ./.env
+    ports:
+      - "6379:6379"
+    depends_on:
+      - connected_packs_db
+
+  celery:
+    restart: always
+    build: .
+    container_name: celery
+    build:
+      context: .
+      dockerfile: ./config/celery/Dockerfile
+    volumes:
+      - .:/code
+    env_file: ./.env
+    command: bash -c "celery -A backend worker -l info"
+    depends_on:
+      - redis
+      - connected_packs_db
+
+volumes:
+  connected_packs_db_volume:

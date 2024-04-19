@@ -1,0 +1,251 @@
+{% extends "custom_base.html" %}
+{% load i18n static jazzmin admin_urls %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+{% load custom_filters %}
+
+{% block header %}
+    {% block main_head %}
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <title>QR Templates</title>
+        <!-- Font Awesome Icons -->
+        <link rel="stylesheet" href="{% static "vendor/fontawesome-free/css/all.min.css" %}">
+
+        <!-- Bootstrap and adminLTE -->
+        <link rel="stylesheet" href="{% static "vendor/adminlte/css/adminlte.min.css" %}" id="adminlte-css">
+
+        <!-- Bootswatch theme -->
+        {% if jazzmin_ui.theme.name != 'default' %}
+            <link rel="stylesheet" href="{{ jazzmin_ui.theme.src }}" id="jazzmin-theme" />
+        {% endif %}
+
+        {% if jazzmin_ui.dark_mode_theme %}
+            <link rel="stylesheet" href="{{ jazzmin_ui.dark_mode_theme.src }}" id="jazzmin-dark-mode-theme" media="(prefers-color-scheme: dark)"/>
+        {% endif %}
+
+        <!-- Custom fixes for django -->
+        <link rel="stylesheet" href="{% static "jazzmin/css/main.css" %}">
+
+
+        <!-- favicons -->
+        <link rel="shortcut icon" href="{% static jazzmin_settings.site_icon %}" type="image/png">
+        <link rel="icon" href="{% static jazzmin_settings.site_icon %}" sizes="32x32" type="image/png">
+
+        {% if jazzmin_settings.use_google_fonts_cdn %}
+        <!-- Google Font: Source Sans Pro -->
+        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+        {% endif %}
+        {% if jazzmin_settings.custom_css %}
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="{% static jazzmin_settings.custom_css %}">
+        {% endif %}
+    {% endblock %}
+{% endblock %}
+
+{% block body %}
+    {% block top_content %}
+        {% block sticky_header %}
+            {{block.super}}
+        {% endblock %}
+        {% block content %}
+            <section class="qr-template-section">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12">
+                            {% if messages %}
+                                {% for message in messages %}
+                                    {% if message.tags == 'error' %}
+                                        <div class="alert alert-danger alert-dismissible fade show" id="form_status_message_error" role="alert">
+                                            {{message}}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                    {% else %}
+                                        <div class="alert alert-success alert-dismissible fade show" id="form_status_message_success" role="alert">
+                                            {{message}}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            <h4>Select a template to design your QR</h4>
+                            <div class="cp-filter">
+                                <div class="form-group">
+                                    <!-- <label>Search Templates</label> -->
+                                    <input type="search" placeholder="Search for templates" class="form-control" id="qr_template_search_box" oninput="search_qr_code_template(this);">
+                                </div>
+                            </div>
+                            <div class="qr-template-wrap">
+                                {% for qr_code_template in qr_code_templates %}
+                                    <div class="qr-template-single">
+                                        <img onclick="show_apply_qr_template_form(this);" src="{{qr_code_template.sample_qr_code_blob_url}}" alt="Image not found">
+                                        <div class="qr-template-info">
+                                            <input type="text" class="form-control" value="{{qr_code_template.id}}" hidden>
+                                            <span class="qr_code_template_name"><b>Name: </b>{{qr_code_template.template_name}}</span>
+                                            <span class="qr_code_template_date"><b>Date Created: </b>{{qr_code_template.date_created}}</span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="cp-template-btn-group" hidden>
+                                <a href="#" class="btn btn-outline-info cp-primary-btn" id="qr_template_apply_btn" data-toggle="modal" data-target="#cp-applymodal">Apply</a>
+                                <a href="{% url 'qr_request_form' %}" class="btn cp-btn-sec-small">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Modal Campaign-->
+            <div class="modal fade cp-gothrough-modal" id="cp-applymodal" tabindex="-1" role="dialog" aria-labelledby="cp-applymodalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h5 class="modal-title" id="cp-applymodalLabel">Select Product Name</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    <div class="modal-body" id="query-details">
+                        <div class="form-group">
+                            <img id="modalImage" src="" alt="Image Preview" style="max-width: 100%;">
+                            <a id="downloadButton" class="btn btn-primary" href="#" download>Download Image</a>        
+                            <form method="post" action="{% url 'qr_template_apply_form' %}">
+                                <!-- <label class="form-label" for="template_apply_product_input">Product Name</label> -->
+                                {% csrf_token %}
+                                {% for product in products %}
+                                <input name="template_apply_product" value="{{product.id}}" hidden></input>
+                                {% endfor %}
+                                <!-- <select id="template_apply_product_input" name="template_apply_product" class="form-select" required>
+                                    <option value="" selected>Select Product Name</option>
+                                        <option value="{{product.id}}">{{product.product_name}}</option>
+                                </select> -->
+                                <br>
+                                <input class="form-control" type="text" name="template_apply_id" id="template_apply_id_input" hidden required>
+                                <div class="cp-gothrough-modal-btn-group mt-4">
+                                    <input type="submit" class="cp-gothrough-modal-btn" >
+                                    <!-- <a href="#" class="cp-gothrough-modal-btn" data-dismiss="modal" aria-label="Close">
+                                        Cancel
+                                    </a> -->
+                                </div>
+                            </form>
+
+
+                            <div class="col-md-3 col-sm-12">
+                                <div class="form-group qr-code-preview-box">
+                                    <img src="{% static 'images/qr_logo.png' %}" alt="Could not process image please try again later" id="qr_code_img">
+                                </div>
+                            </div>
+
+
+
+
+                            <!-- <div class="cp-gothrough-modal-btn-group">
+                                <a href="{% url 'save_qr_customization_template' %}" class="cp-gothrough-modal-btn">
+                                    Save Template
+                                </a>
+                            </div> -->
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            <!-- <div class="modal fade cp-gothrough-modal" id="cp-applymodal" tabindex="-1" role="dialog" aria-labelledby="cp-applymodalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h5 class="modal-title" id="cp-applymodalLabel">Apply QR Design Template</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    <div class="modal-body">
+                        <h6>Do you want to apply to all codes in this request?</h6>
+                        <div class="cp-gothrough-modal-btn-group">
+                            <a href="#" class="cp-gothrough-modal-btn">
+                                Yes
+                            </a>
+                            <a href="#" class="cp-gothrough-modal-btn" data-dismiss="modal" aria-label="Close">
+                                No
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div> -->
+            <footer class="landing-footer">
+                Copyright © 2023. All rights reserved.
+            </footer>
+        {% endblock %}
+        {% block custom_js %}
+            <script>
+                var form_status_message_success = document.getElementById('form_status_message_success');
+                var form_status_message_error = document.getElementById('form_status_message_error');
+                if (form_status_message_success){
+                    setTimeout(function() {
+                    form_status_message_success.hidden=true;
+                    }, 5000);
+                };
+                if (form_status_message_error){
+                    setTimeout(function() {
+                    form_status_message_error.hidden=true;
+                    }, 5000);
+                };
+            </script>
+            <script>
+                // $('.qr-template-single').click( function() {
+                //     $(this).toggleClass('active');
+                // } );
+                function search_qr_code_template(qr_code_template_search_box){
+                    var qr_code_template_imgs = document.querySelectorAll('.qr-template-single');
+                    if (qr_code_template_search_box.value == ''){
+                        qr_code_template_imgs.forEach(function(qr_code_template_img) {
+                            qr_code_template_img.hidden = false;
+                        });
+                    }
+                    for (var i = 0; i < qr_code_template_imgs.length; i++){
+                        var template_name_arr = qr_code_template_imgs[i].getElementsByTagName('span')[0].textContent.split(':');
+                        var template_name = template_name_arr[template_name_arr.length - 1].trim();
+                        // console.log(template_name);
+                        if (!template_name.toLowerCase().startsWith(qr_code_template_search_box.value.toLowerCase())){
+                            qr_code_template_imgs[i].hidden = true
+                        }else{
+                            qr_code_template_imgs[i].hidden = false
+                        }
+                    }
+                };
+
+                function show_apply_qr_template_form(qr_template_img_input){
+
+                    const modalImage = document.getElementById('modalImage');
+                    modalImage.src = qr_template_img_input.src;
+
+                    const downloadButton = document.getElementById('downloadButton');
+                    downloadButton.href = qr_template_img_input.src;
+
+                    var qr_template_apply_btn = document.getElementById("qr_template_apply_btn");
+                    var template_apply_id_input = document.getElementById("template_apply_id_input")
+                    var qr_template_div = qr_template_img_input.parentNode;
+                    var qr_template_id_input = qr_template_div.querySelector(".qr-template-info").querySelector("input[type=text]");
+                    var qr_template_id = qr_template_id_input.value
+                    template_apply_id_input.value = qr_template_id
+                    qr_template_apply_btn.click();
+                };
+            </script>
+        {% endblock %}
+    {% endblock %}
+{% endblock %}

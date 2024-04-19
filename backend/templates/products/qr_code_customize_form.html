@@ -1,0 +1,375 @@
+{% extends "custom_base.html" %}
+{% load i18n static jazzmin admin_urls %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+{% load static %}
+{% load custom_filters %}
+
+{% block header %}
+    {% block main_head %}
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+        <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script> -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet"/>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&display=swap" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
+        <title>QR Code Customize Form</title>
+        <!-- Font Awesome Icons -->
+        <link rel="stylesheet" href="{% static "vendor/fontawesome-free/css/all.min.css" %}">
+
+        <!-- Bootstrap and adminLTE -->
+        <link rel="stylesheet" href="{% static "vendor/adminlte/css/adminlte.min.css" %}" id="adminlte-css">
+
+        <!-- Bootswatch theme -->
+        {% if jazzmin_ui.theme.name != 'default' %}
+            <link rel="stylesheet" href="{{ jazzmin_ui.theme.src }}" id="jazzmin-theme" />
+        {% endif %}
+
+        {% if jazzmin_ui.dark_mode_theme %}
+            <link rel="stylesheet" href="{{ jazzmin_ui.dark_mode_theme.src }}" id="jazzmin-dark-mode-theme" media="(prefers-color-scheme: dark)"/>
+        {% endif %}
+
+        <!-- Custom fixes for django -->
+        <link rel="stylesheet" href="{% static "jazzmin/css/main.css" %}">
+
+
+        <!-- favicons -->
+        <link rel="shortcut icon" href="{% static jazzmin_settings.site_icon %}" type="image/png">
+        <link rel="icon" href="{% static jazzmin_settings.site_icon %}" sizes="32x32" type="image/png">
+
+        {% if jazzmin_settings.use_google_fonts_cdn %}
+        <!-- Google Font: Source Sans Pro -->
+        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+        {% endif %}
+        {% if jazzmin_settings.custom_css %}
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="{% static jazzmin_settings.custom_css %}">
+        {% endif %}
+    {% endblock %}
+{% endblock %}
+
+{% block body %}
+    {% block top_content %}
+        {% block sticky_header %}
+            {{block.super}}
+        {% endblock %}
+
+        {% block sidebar %}
+           {{block.super}}
+        {% endblock %}
+
+        {% block content %}
+            <div class="content-wrapper">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-success alert-dismissible fade show" id="form_status_message" role="alert">
+                            {{message}}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <section class="qr-req-head-section">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h2 class="cp-page-title">QR Code Customize Form</h2>
+                                <p class="cp-page-desc">Please fill & submit the below details to customize QR</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="qr-cust-form-section">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                                <form class="cp-theme-form-wrap" id="qr_code_customize_form" method="post" action="{% url 'qr_code_customize_form' %}" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="qr_code_customize_form_box" id="qr_code_customize_form_box">
+                                        <div class="cp-theme-form">
+                                            <div class="row mb-4 border-bottom pb-4">
+                                                <div class="col-md-3 col-sm-12">
+                                                    <div class="form-group">
+                                                        <label for="product_name_input" class="form-label">Product Name<span class="text-danger"> *</span></label>
+                                                        <select class="form-select" id="product_name_input" aria-label="Default select example" name="product_name" onclick="show_product_qr_code(this)" required>
+                                                            <option value="" disabled selected>Select Product</option>
+                                                            {% for product in products %}
+                                                                <option value="{{product.id}}" product_img_url="{{product.qr_code_img_url}}">{{product.product_name}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                        <small class="cp-form-error">Please Select Product</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 col-sm-12" hidden>
+                                                    <div class="form-group">
+                                                        <label for="qr_code_product_id_input" class="form-label">QR Code Product ID<span class="text-danger"> *</span></label>
+                                                        <input type="text" class="form-control" name="qr_code_product_id" id="qr_code_product_id_input">
+                                                        <small class="cp-form-error">Please Select QR Code Product ID</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 col-sm-12">
+                                                    <div class="form-group">
+                                                        <label for="color_input" class="form-label">QR Code Color<span class="text-danger"> *</span></label>
+                                                        <input type="color" class="form-control" name="qr_code_color" id="qr_code_color_input" required>
+                                                        <small class="cp-form-error">Please Select QR Code Color</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 col-sm-12">
+                                                    <div class="form-group">
+                                                        <label for="logo_image" class="form-label">QR Code Logo Image</label>
+                                                        <input type="file" class="form-control" name="qr_code_logo_image" id="qr_code_logo_image_input">
+                                                        <small class="cp-form-error">Please Select QR Code Logo Image</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 col-sm-12" hidden>
+                                                    <div class="form-group">
+                                                        <label for="qr_code_image_src_input" class="form-label">QR Code Logo Image Src<span class="text-danger"> *</span></label>
+                                                        <input type="text" class="form-control" name="qr_code_image_src" id="qr_code_image_src_input">
+                                                        <small class="cp-form-error">Please Select QR Code Image Src</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 col-sm-12">
+                                                    <div class="form-group">
+                                                        <label for="eye_shape_input" class="form-label">QR Code Eye Shape<span class="text-danger"> *</span></label>
+                                                        <select class="form-select" id="eye_shape_input" aria-label="Default select example" name="eye_shape" required>
+                                                            <option value="" disabled selected>Select QR Code Eye Shape</option>
+                                                            <option value="frame0">Square</option>
+                                                            <option value="frame12">Circle</option>
+                                                            <option value="frame16">Dashed Square</option>
+                                                            <option value="frame2">Diamond</option>
+                                                            <option value="frame13">Rounded Square</option>
+                                                        </select>
+                                                        <small class="cp-form-error">Please Select QR Code Eye Shape</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 col-sm-12">
+                                                    <div class="form-group">
+                                                        <label for="bgcolor_input" class="form-label">QR Code Background Color</label>
+                                                        <input type="color" class="form-control" name="bgColor" id="qr_code_bgcolor_input">
+                                                        <small class="cp-form-error">Please Select QR Code Background Color</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 col-sm-12">
+                                                    <div class="form-group qr-code-preview-box">
+                                                        <img src="{% static 'images/qr_logo.png' %}" alt="Could not process image please try again later" id="qr_code_img">
+                                                        <!-- <img src="{% static 'images/loader.gif' %}" alt="Loading" id="cp-loader"> -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12" id="qr_code_customize_submit button_div">
+                                        <div class="cp-qr-cust-btn-wrap">
+                                            <button type="submit" class="btn btn-outline-info cp-primary-btn" id="qr_code_customize_submit_button">Preview</button>
+                                            <button type="button" class="btn btn-outline-info cp-primary-btn" id="qr_code_download_button" hidden>
+                                                <a id="qr_code_download_button_url_box" href="" style="color: white;" download>
+                                                    Download
+                                                </a>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info cp-primary-btn" data-toggle="modal" data-target="#cp-savetemplatemodal">Customize & Save Design as Template</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <!-- Modal Campaign-->
+            <div class="modal fade cp-gothrough-modal" id="cp-savetemplatemodal" tabindex="-1" role="dialog" aria-labelledby="cp-savetemplatemodalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h5 class="modal-title" id="cp-savetemplatemodalLabel">Save Template</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <form method="post" action="{% url 'qr_code_templates' %}">
+                                {% csrf_token %}
+                                <input type="text" name="qr_code_template_color" class="form-control" id="qr_code_template_color_input" readonly hidden>
+                                <input type="text" name="qr_code_template_eye_shape" class="form-control" id="qr_code_template_eye_shape_input" readonly hidden>
+                                <input type="text" name="qr_code_template_background_color" class="form-control" id="qr_code_template_background_color_input" readonly hidden>
+                                <input type="text" name="qr_code_template_img_url" class="form-control" id="qr_code_template_img_url_input" readonly hidden>
+                                <input type="text" name="qr_code_template_logo_image" class="form-control" id="qr_code_template_logo_image_input" readonly hidden>
+                                <input type="text" name="qr_code_template_name" placeholder="Enter Template Name" class="form-control" required>
+                                <div class="cp-gothrough-modal-btn-group mt-4">
+                                    <input type="submit" class="cp-gothrough-modal-btn" value="Save Template">
+                                </div>
+                            </form>
+                            <!-- <div class="cp-gothrough-modal-btn-group">
+                                <a href="{% url 'save_qr_customization_template' %}" class="cp-gothrough-modal-btn">
+                                    Save Template
+                                </a>
+                            </div> -->
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        {% endblock %}
+    {% endblock %}
+    
+    {% block custom_js %}
+        <script>
+            // function show_product_qr_code(product_input){
+            //     // alert(product_input.value);
+            //     var product_input_new = $(`#${product_input.id}`);
+            //     var qr_code_product_id = $('#qr_code_product_id_input');
+            //     qr_code_product_id.val(product_input_new.find('option:selected').attr('product_id'));
+            //     qr_code_image.attr('src', `${product_input.options[product_input.selectedIndex].value}`);
+            //     qr_code_image_src_input.val(qr_code_image.attr('src'));
+            // };
+
+            function show_product_qr_code(product_input){
+                var product_input_new = $(`#${product_input.id}`);
+                var qr_code_product_id = $('#qr_code_product_id_input');
+                qr_code_product_id.val(product_input_new.val());
+                qr_code_image.attr('src', product_input_new.find('option:selected').attr('product_img_url'));
+                qr_code_image_src_input.val(qr_code_image.attr('src'));
+            };
+
+            function hexToRgb(hex) {
+                var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+                hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+                    return r + r + g + g + b + b;
+                });
+
+                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+            };
+
+            $(document).ready(function() {
+                var chosen_product_id = "{{chosen_product_id}}";
+                var product_input = $(`#product_name_input`);
+                if (chosen_product_id != 'None'){
+                    product_input.val(chosen_product_id);
+                    var qr_code_product_id = $('#qr_code_product_id_input');
+                    qr_code_product_id.val(product_input.val());
+                    qr_code_image.attr('src', product_input.find('option:selected').attr('product_img_url'));
+                    qr_code_image_src_input.val(qr_code_image.attr('src'));
+                }
+            });
+
+            // $('#qr_code_customize_submit_button').on('click', function(event) {
+            //     event.preventDefault();
+            //     var color = hexToRgb($('#qr_code_color_input').val());
+            //     var color_two = $('#qr_code_color_input');
+            //     var image = $('#qr_code_img');
+            //     $.ajax({
+            //         url: '/products/qr_code_customize_form/',
+            //         type: 'POST',
+            //         processData: false,
+            //         contentType: 'application/json',
+            //         headers: {'X-CSRFToken': "{{csrf_token}}", "Content-Type":"application/json"},
+            //         data: JSON.stringify({'color': color, 'qr_code_image_url': image.attr('src')}),
+            //         success: function(response) {
+            //             var imageUrl = response.image_url;
+            //             image.attr('src', imageUrl);
+            //         },
+            //         error: function(xhr, status, error) {
+            //             console.error(error);
+            //         }
+            //     });
+            // });
+
+            // $('#qr_code_customize_submit_button').on('click', function(event) {
+            //     event.preventDefault();
+            //     var color = hexToRgb($('#qr_code_color_input').val());
+            //     var image = $('#qr_code_img');
+            //     var qr_code_customize_form = $('#qr_code_customize_form')
+            //     console.log(qr_code_customize_form);
+            //     var formData = new FormData(qr_code_customize_form);
+            //     // formData.append("color", color);
+            //     // formData.append("image", imageFile);
+            //     $.ajax({
+            //         url: '/products/qr_code_customize_form/',
+            //         type: 'POST',
+            //         processData: false,
+            //         contentType: 'application/json',
+            //         headers: {'X-CSRFToken': "{{csrf_token}}", "Content-Type":"application/json"},
+            //         data: JSON.stringify(formData.data),
+            //         success: function(response) {
+            //             var imageUrl = response.image_url;
+            //             image.attr('src', imageUrl);
+            //         },
+            //         error: function(xhr, status, error) {
+            //             console.error(error);
+            //         }
+            //     });
+            // });
+
+            $(document).ready(function() {
+                $('#qr_code_customize_form').submit(function(event) {
+                    event.preventDefault(); // Prevent default form submission behavior
+                    var image = $('#qr_code_img');
+                    var qr_code_download_button = $('#qr_code_download_button');
+                    var qr_code_download_button_url_box = qr_code_download_button.find('#qr_code_download_button_url_box');
+                    var qr_code_template_color_input = $('#qr_code_template_color_input');
+                    var qr_code_template_eye_shape_input = $('#qr_code_template_eye_shape_input');
+                    var qr_code_template_background_color_input = $('#qr_code_template_background_color_input');
+                    var qr_code_template_img_url_input = $('#qr_code_template_img_url_input');
+                    var qr_code_template_logo_image_input = $('#qr_code_template_logo_image_input');
+                    qr_code_download_button.attr('hidden', true);
+                    var formData = new FormData(this);
+                    image.attr('src', '/static/images/loader.gif');
+                    $.ajax({
+                    url: $(this).attr('action'),
+                    type: $(this).attr('method'),
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    
+                    success: function(data) {
+                        if (data.qr_code_img_url){
+                            var imageUrl = data.qr_code_img_url;
+                        }else{
+                            var imageUrl = null;
+                        }
+                        image.attr('src', imageUrl);
+                        qr_code_download_button_url_box.attr('href', imageUrl);
+                        qr_code_download_button.attr('hidden', false);
+                        qr_code_template_color_input.val(data.qr_code_color);
+                        qr_code_template_eye_shape_input.val(data.qr_code_eye_shape);
+                        qr_code_template_background_color_input.val(data.qr_code_background_color);
+                        qr_code_template_img_url_input.val(data.qr_code_img_url);
+                        qr_code_template_logo_image_input.val(data.qr_code_logo_image);
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle error response
+                        console.error(error);
+                    }
+                    });
+                });
+            });
+
+            const qr_code_image_src_input = $('#qr_code_image_src_input');
+            const qr_code_image = $('#qr_code_img');
+            const qr_code_product_input = $('#product_name_input');
+            qr_code_image_src_input.val(qr_code_image.attr('src'));
+        </script>
+        <script>
+            form_status_message = document.getElementById('form_status_message')
+            if (form_status_message){
+                setTimeout(function() {
+                form_status_message.classList.remove('show');
+                }, 5000);
+            };
+        </script>
+    {% endblock %}
+{% endblock %}

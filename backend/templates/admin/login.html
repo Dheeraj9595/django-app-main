@@ -1,0 +1,160 @@
+{% extends "registration/base.html" %}
+
+{% load i18n static jazzmin admin_urls %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+
+{% block content %}
+    <div class="login-box-main-wrap">
+        <div class="cp-auth-brand">
+            <img src="{% static "/images/logo.png" %}" alt="CEC Logo" title="CEC Logo">
+        </div>
+        <p class="login-box-msg">{{ jazzmin_settings.welcome_sign }} to Connected Packs</p>
+        <form action="{{ app_path }}" method="post" class="cp-login-form">
+            {% csrf_token %}
+            {% if user.is_authenticated %}
+                <p class="errornote">
+                    <div class="callout callout-danger">
+                        <p>
+                            {% blocktrans trimmed %}
+                                You are authenticated as {{ username }}, but are not authorized to
+                                access this page. Would you like to login to a different account?
+                            {% endblocktrans %}
+                        </p>
+                    </div>
+                </p>
+            {% endif %}
+            {% if form.errors %}
+                {% if form.username.errors %}
+                    <div class="callout callout-danger">
+                        <p>{{ form.username.label }}: {{ form.username.errors|join:', ' }}</p>
+                    </div>
+                {% endif %}
+                {% if form.password.errors %}
+                    <div class="callout callout-danger">
+                        <p>{{ form.password.label }}: {{ form.password.errors|join:', ' }}</p>
+                    </div>
+                {% endif %}
+                {% if form.non_field_errors %}
+                    <div class="callout callout-danger">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endif %}
+            <div class="input-group mb-3">
+                <input type="text" name="username" class="form-control" placeholder="{{ form.username.label }}" required>
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fas fa-user"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="input-group mb-1">
+                <input type="password" name="password" class="form-control" placeholder="{{ form.password.label }}" required>
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fas fa-lock"></span>
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="input-group mb-3 justify-content-end">
+                <a href="#" class="forgot-link">forgot password?</a>
+            </div> -->
+            {% url 'admin_password_reset' as password_reset_url %}
+            <!-- {% if password_reset_url %}
+                <div class="mb-3">
+                    <div class="password-reset-link" style="text-align: center;">
+                        <a href="{{ password_reset_url }}">
+                            {% trans 'Forgotten your password or username?' %}
+                        </a>
+                    </div>
+                </div>
+            {% endif %} -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <button type="submit" class="btn cp-primary-btn btn-block">
+                        {% trans "Log in" %}
+                    </button>
+                </div>
+            </div>
+        </form>
+        <!-- <form action="{{ app_path }}" method="post" class="cp-forgot-form mt-3">
+            <div class="input-group mb-3">
+                <input type="text" name="email" class="form-control" placeholder="Email Address" required>
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fas fa-envelope"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 text-center">
+                    <button type="submit" class="btn cp-primary-btn btn-block">
+                        Send Reset Link
+                    </button>
+                    <a href="#" class="backtologin-link small text-capitalize mt-2 d-inline-block">back to login</a>
+                </div>
+            </div>
+        </form> -->
+    </div>
+    <div class="resetbox-main-wrap d-none">
+        <div class="cp-auth-brand">
+            <img src="{% static "/images/CEC_Logo.jpg" %}" alt="CEC Logo" title="CEC Logo">
+        </div>
+        <p class="login-box-msg">{{ jazzmin_settings.welcome_sign }} to Connected Packs</p>
+        <form action="{{ app_path }}" method="post" class="cp-reset-pass-form">
+            <div class="input-group mb-3">
+                <input type="password" name="password" class="form-control" placeholder="New Password" required>
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fas fa-lock"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <input type="password" name="password" class="form-control" placeholder="Confirm New Password" required>
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fas fa-lock"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 text-center">
+                    <button type="submit" class="btn cp-primary-btn btn-block">
+                        Reset Password
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+        
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script>
+    //     $(document).ready(function(){
+    //   $(".forgot-link").click(function(){
+    //     $(".cp-forgot-form").addClass("show-forgot");
+    //     $(".cp-login-form").addClass("hide-login");
+    //   });
+    //   $(".backtologin-link").click(function(){
+    //     $(".cp-forgot-form").removeClass("show-forgot");
+    //     $(".cp-login-form").removeClass("hide-login");
+    //   });
+    // });
+    </script>
+
+
+<!-- Cookie Consent by FreePrivacyPolicy.com https://www.FreePrivacyPolicy.com -->
+<script type="text/javascript" src="//www.freeprivacypolicy.com/public/cookie-consent/4.1.0/cookie-consent.js" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">
+document.addEventListener('DOMContentLoaded', function () {
+cookieconsent.run({"notice_banner_type":"simple","consent_type":"express","palette":"dark","language":"en","page_load_consent_levels":["strictly-necessary"],"notice_banner_reject_button_hide":false,"preferences_center_close_button_hide":false,"page_refresh_confirmation_buttons":false,"website_name":"Connected Packs","website_privacy_policy_url":"https://www.freeprivacypolicy.com/live/9058d0ac-3dd7-4a8c-bd39-8300d0f7b58a"});
+});
+</script>
+
+<noscript>Cookie Consent by <a href="https://www.freeprivacypolicy.com/">Free Privacy Policy Generator</a></noscript>
+<!-- End Cookie Consent by FreePrivacyPolicy.com https://www.FreePrivacyPolicy.com -->
+
+{% endblock %}

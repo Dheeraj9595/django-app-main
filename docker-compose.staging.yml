@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  web:
+    restart: always
+    container_name: web
+    build:
+      context: .
+      dockerfile: ./config/web/Dockerfile
+    volumes:
+      - .:/code
+    env_file: ./.env
+    command: bash -c "python manage.py migrate && python manage.py collectstatic --noinput --clear && gunicorn --bind=0.0.0.0 --workers 4 --timeout 600 backend.wsgi:application"
+    ports:
+      - "8000:8000"
+
+  redis:
+    restart: always
+    image: redis
+    container_name: redis
+    command: redis-server --requirepass redisserver
+    env_file: ./.env
+    ports:
+      - "6379:6379"
+
+  celery:
+    restart: always
+    build: .
+    container_name: celery
+    build:
+      context: .
+      dockerfile: ./config/celery/Dockerfile
+    volumes:
+      - .:/code
+    env_file: ./.env
+    command: bash -c "celery -A backend worker -l info"
+    depends_on:
+      - redis

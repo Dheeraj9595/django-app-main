@@ -1,0 +1,521 @@
+{% extends "custom_base.html" %}
+{% load i18n static jazzmin admin_urls %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+{% load custom_filters %}
+
+{% block header %}
+    {% block main_head %}
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <title>Sales Data Form</title>
+        <!-- Font Awesome Icons -->
+        <link rel="stylesheet" href="{% static "vendor/fontawesome-free/css/all.min.css" %}">
+
+        <!-- Bootstrap and adminLTE -->
+        <link rel="stylesheet" href="{% static "vendor/adminlte/css/adminlte.min.css" %}" id="adminlte-css">
+
+        <!-- Bootswatch theme -->
+        {% if jazzmin_ui.theme.name != 'default' %}
+            <link rel="stylesheet" href="{{ jazzmin_ui.theme.src }}" id="jazzmin-theme" />
+        {% endif %}
+
+        {% if jazzmin_ui.dark_mode_theme %}
+            <link rel="stylesheet" href="{{ jazzmin_ui.dark_mode_theme.src }}" id="jazzmin-dark-mode-theme" media="(prefers-color-scheme: dark)"/>
+        {% endif %}
+
+        <!-- Custom fixes for django -->
+        <link rel="stylesheet" href="{% static "jazzmin/css/main.css" %}">
+
+
+        <!-- favicons -->
+        <link rel="shortcut icon" href="{% static jazzmin_settings.site_icon %}" type="image/png">
+        <link rel="icon" href="{% static jazzmin_settings.site_icon %}" sizes="32x32" type="image/png">
+
+        {% if jazzmin_settings.use_google_fonts_cdn %}
+        <!-- Google Font: Source Sans Pro -->
+        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+        {% endif %}
+        {% if jazzmin_settings.custom_css %}
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="{% static jazzmin_settings.custom_css %}">
+        {% endif %}
+    {% endblock %}
+{% endblock %}
+
+{% block body %}
+    {% block top_content %}
+        {% block sticky_header %}
+            {{block.super}}
+        {% endblock %}
+
+        {% block sidebar %}
+           {{block.super}}
+        {% endblock %}
+        
+        {% block content %}
+            <div class="content-wrapper">    
+                <section class="qr-req-head-section">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h2 class="cp-page-title">Sales Data Form</h2>
+                                <p class="cp-page-desc">Please fill & submit the below details to update sales data</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="qr-req-form-section">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-md-11">
+                                <form class="cp-theme-form-wrap" method="post">
+                                    {% csrf_token %}
+                                    <div class="cp-theme-form">
+                                        <div class="row">
+                                            <div class="alert alert-danger" role="alert" id="sales_data_already_exists_warning" hidden>
+                                                Sales Data for this product for given date with estimated unit sales value already exists.
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group mb-4">
+                                                    <label for="markets_input" class="form-label">Markets<span class="text-danger"> *</span></label>
+                                                    <select class="form-select" id="markets_input" aria-label="Default select example" name="markets" oninput="filter_products_by_market(this);" multiple>
+                                                        <option value="" disabled>Select Markets</option>
+                                                        {% for market_obj in market_objs %}
+                                                            <option value="{{market_obj.market_name}}">{{market_obj.market_name}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3" id="campaign_id_input_div" hidden>
+                                                <div class="form-group mb-4">
+                                                    <label for="campaign_id_input" class="form-label">Campaign ID</label>
+                                                    <input type="text" class="form-control" value="{{campaign_id}}" name="campaign_id" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3" id="sales_data_id_input_div" hidden>
+                                                <div class="form-group mb-4">
+                                                    <label for="sales_data_id_input" class="form-label">Sales Data ID</label>
+                                                    <input class="form-control" id="sales_data_id_input" name="sales_data_id_input" type="number" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group mb-4">
+                                                    <label for="product_input" class="form-label">Product<span class="text-danger"> *</span></label>
+                                                    <select class="form-select" id="product_input" aria-label="Default select example" name="product" onclick="show_product_existing_sales_data();" required>
+                                                        <option value="1">Select Product</option>
+                                                        {% for product_obj in product_objs %}
+                                                            <option product_pkey="{{product_obj.product.id}}" value="{{product_obj.id}}">{{product_obj.product.product_name}} - {{product_obj.market.market_name}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <!-- <div class="dropdown cp-form-dropdown">
+                                                        <button class="btn btn-secondary dropdown-toggle" type="button" id="select_product_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                            Select Product
+                                                        </button>
+                                                        <div class="dropdown-menu" aria-labelledby="select_product_button">
+                                                            <span class="dropdown-item cp-item-search">
+                                                                <input type="search" placeholder="Search for product" class="form-control"/>
+                                                            </span>
+                                                            {% for product_obj in product_objs %}
+                                                                <span class="dropdown-item" product_pkey="{{product_obj.product.id}}" value="{{product_obj.id}}">{{product_obj.product.product_name}} - {{product_obj.market.market_name}}</span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div> -->
+                                                    <small class="cp-form-error">Please Select Product</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group mb-4">
+                                                <label for="sales_number_type_input" class="form-label">Sales Type<span class="text-danger"> *</span></label>
+                                                <select class="form-select" id="sales_number_type_input" aria-label="Default select example" onclick="show_product_existing_sales_data();" onchange="sales_number_input_show(this);" required>
+                                                    <option value="" selected disabled>Select Sales Type</option>
+                                                    <option value="estimated_unit_sales_input">Estimated Unit Sales</option>
+                                                    <option value="actual_unit_sales_input">Actual Unit Sales</option>
+                                                </select>
+                                                </div>
+                                            </div>   
+                                            <div class="col-sm-3" id="estimated_unit_sales_input_div" hidden>
+                                                <div class="form-group mb-4">
+                                                    <label for="estimated_unit_sales_input" class="form-label">Estimated Unit Sales<span class="text-danger"> *</span></label>
+                                                    {{form.estimated_unit_sales}}
+                                                    <small class="cp-form-error">Please Enter Estimated Unit Sales</small>
+                                                </div>
+                                            </div>  
+                                            <div class="col-sm-3" id="actual_unit_sales_input_div" hidden>
+                                                <div class="form-group mb-4">
+                                                    <label for="actual_unit_sales_input" class="form-label">Actual Unit Sales<span class="text-danger"> *</span></label>
+                                                    {{form.actual_unit_sales}}
+                                                    <small class="cp-form-error">Please Enter Actual Unit Sales</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <div class="form-group mb-4">
+                                                    <label for="from_date_input" class="form-label">From Date<span class="text-danger"> *</span></label>
+                                                    {{form.from_date}}
+                                                    <small class="cp-form-error">Please Enter From Date</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group mb-4">
+                                                    <label for="to_date_input" class="form-label">To Date<span class="text-danger"> *</span></label>
+                                                    {{form.to_date}}
+                                                    <small id="date_warning" class="form-text text-danger" hidden>To date cannot be less than from date.</small>
+                                                    <small class="cp-form-error">Please Enter To Date</small>
+                                                </div>
+                                            </div>
+                                        </div>    
+                                        <div class="col-sm-12">
+                                            <input type="submit" class="btn btn-outline-info cp-primary-btn" id="sales_data_form_submit_button">
+                                        </div>      
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-md-11">
+                                <div class="cp-sdata-cards-wrap">
+                                    <div class="cp-sdata-table-wrap">
+                                        <div class="card">
+                                            <div class="card-body table-responsive p-0">
+                                                <table id="table-sales-data" class="table table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="djn-checkbox-select-all" tabindex="0" rowspan="1" colspan="1">
+                                                                <div class="text">        
+                                                                        <span><input type="checkbox" id="action-toggle"></span>
+                                                                </div>
+                                                            </th>
+                                                            <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                                                <div class="text">   
+                                                                        <a href="javascript:void(0);">Product</a>
+                                                                </div>
+                                                            </th>
+                                                            <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                                                <div class="text">   
+                                                                        <a href="javascript:void(0);">Market</a>
+                                                                </div>
+                                                            </th>
+                                                            <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                                                <div class="text">
+                                                                        <a href="javascript:void(0);">Estimated Unit Sales</a>
+                                                                </div>
+                                                            </th>
+                                                            <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                                                <div class="text">
+                                                                        <a href="javascript:void(0);">Actual Unit Sales</a>
+                                                                </div>
+                                                            </th>
+                                                            <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                                                <div class="text">
+                                                                        <a href="javascript:void(0);">From date</a>
+                                                                </div>
+                                                            </th>
+                                                            <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                                                <div class="text">
+                                                                        <a href="javascript:void(0);">To date</a>
+                                                                </div>
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="existing_sales_data_table_body">
+                                                        {% for sales_data_obj in sales_data_objs %}
+                                                            <tr role="row" class="even">
+                                                                <td class="action-checkbox">
+                                                                    <input type="checkbox" name="" value="5" class="action-select">
+                                                                </td>
+                                                                <th class="field-product nowrap">
+                                                                    <a href="javascript:void(0);">{{sales_data_obj.product.product.product_name}}</a>
+                                                                </th>
+                                                                <td class="field-aus nowrap">{{sales_data_obj.market.market_name}}</td>
+                                                                <td class="field-eus nowrap">{{sales_data_obj.estimated_unit_sales}}</td>
+                                                                <td class="field-aus nowrap">{{sales_data_obj.actual_unit_sales}}</td>
+                                                                <td class="field-to_date nowrap">{{sales_data_obj.from_date}}</td>
+                                                                <td class="field-from_date nowrap">{{sales_data_obj.to_date}}</td>
+                                                        {% endfor %}
+                                                            </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div> 
+                                </div>
+                            </div>
+                        </div>    
+                    </div>
+                </section>  
+            </div>
+        {% endblock %}
+    {% endblock %}
+
+    {% block custom_js %}
+        <script>
+            const product_objs = {{ product_objs | product_queryset_as_json }};
+            const sales_data_objs = {{ sales_data_objs | sales_data_queryset_as_json }};
+
+            document.querySelector("#actual_unit_sales_input").addEventListener("keypress", allow_integer_input);
+            document.querySelector("#estimated_unit_sales_input").addEventListener("keypress", allow_integer_input);
+
+            $(document).ready(function() {
+                // $('#product_input').select2();
+                $('#markets_input').select2();
+            });
+            
+            function allow_integer_input(e){
+                var allowedChars = '0123456789';
+                function contains(stringValue, charValue) {
+                    return stringValue.indexOf(charValue) > -1;
+                }
+                var invalidKey = e.key.length === 1 && !contains(allowedChars, e.key)
+                || e.key === '.' && contains(e.target.value, '.');
+                invalidKey && e.preventDefault();
+            };
+
+            function date_compare_func(){
+                var from_date_input = document.querySelector('#from_date_input');
+                var to_date_input = document.querySelector('#to_date_input');
+                var date_warning = document.querySelector('#date_warning');
+                var sales_data_form_submit_button = document.querySelector('#sales_data_form_submit_button');
+                from_date = new Date(from_date_input.value);
+                to_date = new Date(to_date_input.value);
+                if (from_date.getTime() > to_date.getTime()){
+                    sales_data_form_submit_button.disabled = true
+                    date_warning.hidden = false
+                }
+                else {
+                    date_warning.hidden = true
+                    // sales_data_form_submit_button.disabled = false
+                }
+            };
+
+            function sales_number_input_show(sales_number_type_input){
+                var sales_number_type_input_options = sales_number_type_input.options
+                for (var i=1; i < sales_number_type_input_options.length; i++){
+                    if (sales_number_type_input.value == sales_number_type_input_options[i].value){
+                        var selected_sales_number_input_div = document.querySelector(`#${sales_number_type_input.value}_div`);
+                        var selected_sales_number_input = selected_sales_number_input_div.querySelector('input');
+                        selected_sales_number_input_div.hidden = false
+                        selected_sales_number_input.required = true
+                    }
+                    else{
+                        var unselected_sales_number_input_div = document.querySelector(`#${sales_number_type_input_options[i].value}_div`);
+                        var unselected_sales_number_input = unselected_sales_number_input_div.querySelector('input');
+                        unselected_sales_number_input_div.hidden = true
+                        unselected_sales_number_input.value = null
+                        unselected_sales_number_input.required = false
+                    }
+                }
+            };
+
+            // function show_product_existing_sales_data(product_input){
+            //     var existing_product_data_input_box = document.querySelector('#existing_product_data_input_box');
+            //     var existing_product_data_input = existing_product_data_input_box.querySelector('#existing_product_data_input');
+            //     var sales_data_count = 0
+            //     while (existing_product_data_input.options.length > 1) {
+            //         existing_product_data_input.removeChild(existing_product_data_input.options[1]);
+            //     }
+            //     existing_product_data_input.selectedIndex = 0
+            //     for (var i = 0; i < sales_data_objs.length; i++){
+            //         if (sales_data_objs[i].product_id == product_input.value){
+            //             sales_data_count++
+            //             var new_option = document.createElement('option');
+            //             new_option.value = `${sales_data_objs[i].id}`;
+            //             new_option.textContent = `${sales_data_objs[i].product_id} - ${sales_data_objs[i].from_date} : ${sales_data_objs[i].to_date}`;
+            //             existing_product_data_input.appendChild(new_option);
+            //         }
+            //     }
+            //     if (sales_data_count != 0){
+            //         existing_product_data_input_box.hidden = false
+            //     }
+            //     else{
+            //         existing_product_data_input_box.hidden = true
+            //     }
+            // };
+
+            function add_all_sales_data(){
+                var existing_sales_data_table_body = document.querySelector('#existing_sales_data_table_body');
+                existing_sales_data_table_body.innerHTML = "";
+                for (var i = 0; i < sales_data_objs.length; i++){
+                    var new_row = `<tr role="row" class="even">
+                                        <td class="action-checkbox">
+                                            <input type="checkbox" name="" value="5" class="action-select">
+                                        </td>
+                                        <th class="field-product nowrap">
+                                            <a href="javascript:void(0);">${sales_data_objs[i].main_product_name}</a>
+                                        </th>
+                                        <td class="field-aus nowrap">${sales_data_objs[i].market_id}</td>
+                                        <td class="field-eus nowrap">${sales_data_objs[i].estimated_unit_sales}</td>
+                                        <td class="field-aus nowrap">${sales_data_objs[i].actual_unit_sales}</td>
+                                        <td class="field-to_date nowrap">${sales_data_objs[i].from_date}</td>
+                                        <td class="field-from_date nowrap">${sales_data_objs[i].to_date}</td>
+                                    </tr>`
+                    existing_sales_data_table_body.insertAdjacentHTML('beforeend', new_row);
+                };
+            };
+
+            function show_product_existing_sales_data(){
+                var existing_sales_data_table_body = document.querySelector('#existing_sales_data_table_body');
+                var product_input = document.querySelector('#product_input');
+                var selected_product_input = product_input.options[product_input.selectedIndex];
+                var selected_product_pkey = selected_product_input.getAttribute('product_pkey');
+                var from_date_input = document.querySelector('#from_date_input');
+                var to_date_input = document.querySelector('#to_date_input');
+                var estimated_unit_sales_input_div = document.querySelector('#estimated_unit_sales_input_div');
+                var actual_unit_sales_input_div = document.querySelector('#actual_unit_sales_input_div');
+                var sales_data_form_submit_button = document.querySelector('#sales_data_form_submit_button');
+                var sales_data_already_exists_warning = document.querySelector('#sales_data_already_exists_warning');
+                var sales_data_id_input = document.querySelector('#sales_data_id_input');
+                sales_data_id_input.value = null
+                sales_data_already_exists_warning.hidden = true
+                sales_data_form_submit_button.disabled = false
+                if (selected_product_pkey && from_date_input.value && to_date_input.value){
+                    existing_sales_data_table_body.innerHTML = "";
+                    var selected_from_date = new Date(from_date_input.value);
+                    var selected_to_date = new Date(to_date_input.value);
+                    for (var i = 0; i < sales_data_objs.length; i++){
+                        try{
+                            var obj_from_date = new Date(sales_data_objs[i].from_date);
+                            var obj_to_date = new Date(sales_data_objs[i].to_date);
+                            if ((sales_data_objs[i].main_product_id == selected_product_pkey) && ((obj_from_date.getTime() >= selected_from_date.getTime() && obj_from_date.getTime() <= selected_to_date.getTime()) || (obj_to_date.getTime() >= selected_from_date.getTime() && obj_to_date.getTime() <= selected_to_date.getTime()))){
+                                var new_row = `<tr role="row" class="even">
+                                                    <td class="action-checkbox">
+                                                        <input type="checkbox" name="" value="5" class="action-select">
+                                                    </td>
+                                                    <th class="field-product nowrap">
+                                                        <a href="javascript:void(0);">${sales_data_objs[i].main_product_name}</a>
+                                                    </th>
+                                                    <td class="field-aus nowrap">${sales_data_objs[i].market_id}</td>
+                                                    <td class="field-eus nowrap">${sales_data_objs[i].estimated_unit_sales}</td>
+                                                    <td class="field-aus nowrap">${sales_data_objs[i].actual_unit_sales}</td>
+                                                    <td class="field-to_date nowrap">${sales_data_objs[i].from_date}</td>
+                                                    <td class="field-from_date nowrap">${sales_data_objs[i].to_date}</td>
+                                                </tr>`
+                                existing_sales_data_table_body.insertAdjacentHTML('beforeend', new_row);
+                            }
+                            if ((sales_data_objs[i].main_product_id == selected_product_pkey) && (obj_from_date.getTime() >= selected_from_date.getTime()) && (obj_to_date.getTime() <= selected_to_date.getTime())){
+                                sales_data_id_input.value = sales_data_objs[i].id
+                                if (sales_data_objs[i].estimated_unit_sales){
+                                    if (estimated_unit_sales_input_div.hidden == false){
+                                        sales_data_already_exists_warning.hidden = false
+                                        sales_data_form_submit_button.disabled = true
+                                    }else{
+                                        sales_data_already_exists_warning.hidden = true
+                                        sales_data_form_submit_button.disabled = false
+                                    }
+                                }
+                            }
+                        }catch(error){
+                            console.error(`Error on iteration ${i}: ${error}`);
+                            continue;
+                        }
+                    };
+                }
+                else if(existing_sales_data_table_body.getElementsByTagName('tr').length != sales_data_objs.length){
+                    add_all_sales_data();
+                }
+            };
+
+            // function populate_existing_sales_data(existing_sales_data_input){
+            //     var sales_number_type_input = document.querySelector('#sales_number_type_input');
+            //     var from_date_input = document.querySelector('#from_date_input');
+            //     var to_date_input = document.querySelector('#to_date_input');
+            //     for (var i = 0; i < sales_data_objs.length; i++){
+            //         if (sales_data_objs[i].id == existing_sales_data_input.value){
+            //             if (sales_data_objs[i].actual_unit_sales != null){
+            //                 sales_number_type_input.selectedIndex = 2
+            //                 var sales_number_input = sales_number_input_show(sales_number_type_input);
+            //                 // alert(sales_number_type_input.selectedIndex.value);
+            //                 // alert('hi')
+            //                 // var sales_number_input =  document.querySelector(`#${sales_number_type_input.selectedIndex.value}`);
+            //                 sales_number_input.value = sales_data_objs[i].actual_unit_sales
+            //             }
+            //             else {
+            //                 sales_number_type_input.selectedIndex = 1
+            //                 var sales_number_input = sales_number_input_show(sales_number_type_input);
+            //                 // var sales_number_input =  document.querySelector(`#${sales_number_type_input.selectedIndex.value}`);
+            //                 sales_number_input.value = sales_data_objs[i].estimated_unit_sales
+            //                 console.log(sales_data_objs[i].estimated_unit_sales)
+            //             }
+            //             from_date_input.value = sales_data_objs[i].from_date
+            //             to_date_input.value = sales_data_objs[i].to_date
+            //         }
+            //     }
+            // };
+
+            function add_all_products_in_dropdown(){
+                var product_input = document.querySelector('#product_input');
+                for (var i = 0; i < product_objs.length; i++){
+                    var new_option = document.createElement('option');
+                    new_option.value = `${product_objs[i].id}`;
+                    new_option.textContent = `${product_objs[i].product_name} - ${product_objs[i].market}`;
+                    new_option.setAttribute('product_pkey', product_objs[i].product_id);
+                    product_input.appendChild(new_option);
+                };
+            };
+
+            function filter_products_by_market(market_input){
+                var product_input = document.querySelector('#product_input');
+                while (product_input.options.length > 1) {
+                    product_input.removeChild(product_input.options[1]);
+                };
+                var selected_options = market_input.selectedOptions;
+                var selected_values = []
+                for (var i = 0; i < selected_options.length; i++){
+                    selected_values.push(selected_options[i].value);
+                };
+
+                if (selected_values.length > 0){
+                    for (var i = 0; i < product_objs.length; i++){
+                        if (selected_values.indexOf(product_objs[i].market) != -1){
+                            var new_option = document.createElement('option');
+                            new_option.value = `${product_objs[i].id}`;
+                            new_option.textContent = `${product_objs[i].product_name} - ${product_objs[i].market}`;
+                            new_option.setAttribute('product_pkey', product_objs[i].product_id);
+                            product_input.appendChild(new_option);
+                        };
+                    };
+                }
+                else{
+                    add_all_products_in_dropdown();
+                };
+            };
+
+            // $(document).ready(function() {
+            //     var product_input = document.querySelector('#product_input');
+            //     for (var i = 0; i < product_objs.length; i++){
+            //         var new_option = document.createElement('option');
+            //         new_option.value = `${product_objs[i].product_name}`;
+            //         new_option.textContent = `${product_objs[i].product_name}`;
+            //         product_input.appendChild(new_option);
+            //     };
+            // });
+        </script>
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script> -->
+        <script>
+            var header = $('.header-fixed');
+
+            $(window).scroll(function(e){
+                if(header.offset().top !== 0){
+                    if(!header.hasClass('shadow')){
+                        header.addClass('shadow');
+                    }
+                }else{
+                    header.removeClass('shadow');
+                }
+            });
+        </script>
+    {% endblock %}
+{% endblock %}

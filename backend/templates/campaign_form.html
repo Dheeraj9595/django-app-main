@@ -1,0 +1,826 @@
+{% extends "custom_base.html" %}
+{% load i18n static jazzmin admin_urls %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+{% load custom_filters %}
+
+{% block header %}
+    {% block main_head %}
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet"/>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&display=swap" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
+        <!-- Font Awesome Icons -->
+        <link rel="stylesheet" href="{% static "vendor/fontawesome-free/css/all.min.css" %}">
+
+        <!-- Bootstrap and adminLTE -->
+        <link rel="stylesheet" href="{% static "vendor/adminlte/css/adminlte.min.css" %}" id="adminlte-css">
+
+        <!-- Bootswatch theme -->
+        {% if jazzmin_ui.theme.name != 'default' %}
+            <link rel="stylesheet" href="{{ jazzmin_ui.theme.src }}" id="jazzmin-theme" />
+        {% endif %}
+
+        {% if jazzmin_ui.dark_mode_theme %}
+            <link rel="stylesheet" href="{{ jazzmin_ui.dark_mode_theme.src }}" id="jazzmin-dark-mode-theme" media="(prefers-color-scheme: dark)"/>
+        {% endif %}
+
+        <!-- Custom fixes for django -->
+        <link rel="stylesheet" href="{% static "jazzmin/css/main.css" %}">
+
+
+        <!-- favicons -->
+        <link rel="shortcut icon" href="{% static jazzmin_settings.site_icon %}" type="image/png">
+        <link rel="icon" href="{% static jazzmin_settings.site_icon %}" sizes="32x32" type="image/png">
+
+        {% if jazzmin_settings.use_google_fonts_cdn %}
+        <!-- Google Font: Source Sans Pro -->
+        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+        {% endif %}
+        {% if jazzmin_settings.custom_css %}
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="{% static jazzmin_settings.custom_css %}">
+        {% endif %}
+
+        <!-- My Imports -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet"/>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
+        <title>Campaign Form</title>
+        <link rel="stylesheet" href="{% static jazzmin_settings.custom_css %}">
+    {% endblock %}
+
+    {% block extrastyle %}
+    {% endblock %}
+{% endblock %}
+
+{% block body %}
+    {% block top_content %}
+        {% block sticky_header %}
+            {{block.super}}
+        {% endblock %}
+
+        {% block sidebar %}
+           {{block.super}}
+        {% endblock %}
+
+        {% block content %}
+            <div class="content-wrapper">
+                <section class="qr-req-head-section">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h2 class="cp-page-title">Campaign Form</h2>
+                                <p class="cp-page-desc">Please fill & submit the below details to create campaign</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="qr-req-form-section">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                           <div class="col-md-11">
+                              <form class="cp-theme-form-wrap" method="post">
+                                 {% csrf_token %}
+                                <div class="cp-theme-form">
+                                    <div class="key_contact_data_box">
+                                    <h4 class="form-text-heading">#Key Contact</h4>
+                                    <div class="row mb-4 border-bottom pb-4">
+                                        <div class="col-sm-4">
+                                            <div class="form-group">
+                                                <label for="key_contact_first_name_input" class="form-label">First Name<span class="text-danger"> *</span></label>
+                                                <input type="text" class="form-control" id="key_contact_first_name_input" name="key_contact_first_name" required>
+                                                <small class="cp-form-error">Please Enter First Name</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="form-group">
+                                                <label for="key_contact_last_name_input" class="form-label">Last Name<span class="text-danger"> *</span></label>
+                                                <input type="text" class="form-control" id="key_contact_last_name_input" name="key_contact_last_name" required>
+                                                <small class="cp-form-error">Please Enter Last Name</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="form-group">
+                                                <label for="key_contact_email_input" class="form-label">Email Address<span class="text-danger"> *</span></label>
+                                                <input type="email" class="form-control" id="key_contact_email_input" name="key_contact_email_address" required> 
+                                                <small class="cp-form-error">Please Enter Email Address</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    <div class="secondary_contact_data_box">
+                                    <h4 class="form-text-heading">#Secondary Contact</h4>
+                                    <div class="row mb-4 border-bottom pb-4">
+                                        <div class="col-sm-4">
+                                            <div class="form-group">
+                                                <label for="secondary_contact_first_name_input" class="form-label">First Name</label>
+                                                <input type="text" class="form-control" id="secondary_contact_first_name_input" name="secondary_contact_first_name">
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="form-group">
+                                                <label for="secondary_contact_last_name_input" class="form-label">Last Name</label>
+                                                <input type="text" class="form-control" id="secondary_contact_last_name_input" name="secondary_contact_last_name">
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="form-group">
+                                                <label for="secondary_contact_email_input" class="form-label">Email Address</label>
+                                                <input type="email" class="form-control" id="secondary_contact_email_input" name="secondary_contact_email_address">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    <div class="row mb-4 border-bottom pb-4">
+                                        <div class="col-sm-3">
+                                            <div class="form-group">
+                                                <label for="campaign_name_input" class="form-label">Campaign Name<span class="text-danger"> *</span></label>
+                                                <input type="text" class="form-control" id="campaign_name_input" name="campaign_name" oninput="this.value=this.value.split(' ')[0]" required>
+                                                <small class="cp-form-error">Please Enter Campaign Name</small>
+                                            </div>
+                                        </div>
+                                        <!-- <div class="col-sm-3">
+                                            <div class="form-group">
+                                                <label for="campaign_name_input" class="form-label">utm campaign<span class="text-danger"> *</span></label>
+                                                <input type="text" class="form-control" id="campaign_name_input" name="campaign_name" oninput="this.value=this.value.split(' ')[0]">
+                                                <small class="cp-form-error">Please Enter Campaign Name</small>
+                                            </div>
+                                        </div> -->
+                                    </div>
+                                    <div class="row row-sec-repeat mb-4 border-bottom pb-4">
+                                    <div class="additional_data_box col-sm-12" id="additional_data_box_1">
+                                        <h4 class="form-text-heading" >#Campaign Details</h4>
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                <label for="division_input_1" class="form-label">Division<span class="text-danger"> *</span></label>
+                                                <select class="form-select" id="division_input_1" aria-label="Default select example" name="division" required>
+                                                    <option value="" disabled selected>Select Division</option>
+                                                    {% for division in divisions %}
+                                                    <option value="{{division.id}}">{{division.division}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                <label for="category_input_1" class="form-label">Category<span class="text-danger"> *</span></label>
+                                                <select class="form-select" id="category_input_1" aria-label="Default select example" name="category" required>
+                                                    <option value="" disabled selected>Select Category</option>
+                                                    {% for category_choice in category_choices %}
+                                                    <option value="{{category_choice}}">{{category_choice}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                <label for="market_input_1" class="form-label">Market<span class="text-danger"> *</span></label>
+                                                <select class="form-select" id="market_input_1" aria-label="Default select example" name="market" required>
+                                                    <option value="" disabled selected>Select Market</option>
+                                                    {% for market in markets %}
+                                                    <option value="{{market.market_name}}">{{market.market_name}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                            </div>
+                                            <!-- <div class="col-sm-3">
+                                                <div class="form-group">
+                                                <label for="local_brand_input_1" class="form-label">Local Brand<span class="text-danger"> *</span></label>
+                                                <select class="form-select" id="local_brand_input_1" onclick="hidden_fields_show(this);" onchange="add_brand_code(this)" aria-label="Default select example" name="local_brand" required>
+                                                    <option value="" disabled selected>Select Local Brand</option>
+                                                    {% for local_brand in local_brands %}
+                                                    <option value="{{local_brand.pk}}">{{local_brand.local_brand_name}}</option>
+                                                    {% endfor %}
+                                                    <option value="other">Other</option>
+                                                </select>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                            </div> -->
+                                            <!-- <div class="col-sm-3" id="local_brand_input_1_hidden" hidden>
+                                                <div class="form-group">
+                                                <label for="local_brand_name_input_1" class="form-label">Local Brand Name<span class="text-danger"> *</span></label>
+                                                <input type="text" class="form-control" id="local_brand_name_input_1" name="local_brand_name">
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                            </div> -->
+                                            <!-- <div class="col-sm-3">
+                                                <div class="form-group">
+                                                <label for="brand_code_input_1" class="form-label">Brand Code<span class="text-danger"> *</span></label>
+                                                <input type="text" class="form-control brand_code_inputs" id="brand_code_input_1" name="brand_code" onchange="utm_campaign_value_add();" readonly required>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                            </div> -->
+                                        </div>
+                                        <!-- <div class="row"> -->
+                                            <!-- <div class="col-sm-3">
+                                                <div class="form-group">
+                                                <label for="global_brand_name_input_1" class="form-label">Global Brand Name</label>
+                                                <input type="text" class="form-control" id="global_brand_name_input_1" name="global_brand_name">
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                            </div> -->
+                                            <!-- <div class="col-sm-3">
+                                                <div class="form-group">
+                                                <label for="upc_ean_gtin_input_1" class="form-label">UPC/EAN/GTIN</label>
+                                                <input type="number" class="form-control" id="upc_ean_gtin_input_1" name="upc_ean_gtin" maxlength="14" oninput="fix_maxlength(this);" onchange="upc_ean_gtin_prefix_add(this);">
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                            </div> -->
+                                            <!-- <div class="col-sm-3">
+                                                <div class="form-group">
+                                                <label for="category_input_1" class="form-label">Category<span class="text-danger"> *</span></label>
+                                                <select class="form-select" id="category_input_1" aria-label="Default select example" name="category" required>
+                                                    <option value="" disabled selected>Select Category</option>
+                                                    {% for category_choice in category_choices %}
+                                                    <option value="{{category_choice}}">{{category_choice}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                            </div>
+                                        </div> -->
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                <label for="activity_type_input_1" class="form-label">Activity Type<span class="text-danger"> *</span></label>
+                                                <select class="form-select" id="activity_type_input_1" onclick="hidden_fields_show(this);" aria-label="Default select example" name="activity_type" required>
+                                                    <option value="" disabled selected>Select Activity Type</option>
+                                                    {% for activity in activities %}
+                                                    <option value="{{activity.id}}">{{activity.experience_type}}</option>
+                                                    {% endfor %}
+                                                    <option value="other">Other</option>
+                                                </select>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3" id="activity_type_input_1_hidden" hidden>
+                                                <div class="form-group">
+                                                <label for="activity_type_name_input_1" class="form-label">Activty Type Name<span class="text-danger"> *</span></label>
+                                                <input type="text" class="form-control" id="activity_type_name_input_1" name="activity_type_name" oninput="this.value=this.value.split(' ')[0]">
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                            </div>
+                                            <!-- <div class="col-sm-3">
+                                                <div class="form-group">
+                                                <label for="landing_page_url_input_1" class="form-label">Landing Page URL<span class="text-danger"> *</span></label>
+                                                <input type="url" class="form-control" id="landing_page_url_input_1" name="landing_page_url" required>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                                </div> -->
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="form-group cp-form-switch">
+                                                <div class="cp-form-switch-inner">
+                                                    <label class="form-label">Is landing page on an external third party site?</label>
+                                                    <label class="switch">
+                                                        <input type="checkbox" class="is_landing_page_on_an_external_third_party_site_input" id="is_landing_page_on_an_external_third_party_site_input_1" name="is_landing_page_on_an_external_third_party_site">
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                </div>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                                <div class="form-group cp-form-switch">
+                                                <div class="cp-form-switch-inner">
+                                                    <label class="form-label">Does landing page include 1PD capture / sign-up?</label>
+                                                    <label class="switch">
+                                                        <input type="checkbox" class="does_landing_page_include_1pd_capture_sign-up_input" id="does_landing_page_include_1pd_capture_sign-up_input_1" name="does_landing_page_include_1pd_capture_or_signup">
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                </div>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                                <div class="form-group cp-form-switch">
+                                                <div class="cp-form-switch-inner">
+                                                    <label class="form-label">Does landing page include option to purchase?</label>
+                                                    <label class="switch">
+                                                        <input type="checkbox" class="does_landing_page_include_option_to_purchase_input" 
+                                                        id="does_landing_page_include_option_to_purchase_input_1" name="does_landing_page_include_option_to_purchase" oninput="show_incentive_input_toggle_button(this);">
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                </div>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                                <div class="form-group cp-form-switch" id="if_yes_is_there_an_incentive_to_purchase_box_1" hidden>
+                                                <div class="cp-form-switch-inner">
+                                                    <label class="form-label">If yes, is there an incentive to purchase?</label>
+                                                    <label class="switch">
+                                                        <input type="checkbox" class="if_yes_is_there_an_incentive_to_purchase_input" id="if_yes_is_there_an_incentive_to_purchase_input_1" name="if_yes_is_there_an_incentive_to_purchase">
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                </div>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <!-- <div class="col-sm-6">
+                                                <div class="form-group">
+                                                <label for="estimated_total_annual_unit_volume_input_1" class="form-label">Estimated total / annual unit volume<span class="text-danger"> *</span></label>
+                                                <input type="number" class="form-control" id="estimated_total_annual_unit_volume_input_1" name="estimated_total_or_annual_unit_volume" required>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                            </div> -->
+                                            <div class="col-sm-3">
+                                                <div class="form-group">
+                                                <label for="planned_launch_date_input_1" class="form-label">Planned launch date<span class="text-danger"> *</span></label>
+                                                <input type="date" class="form-control" id="planned_launch_date_input_1" name="planned_launch_date" required>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                            </div>
+                                            <!-- <div class="col-sm-6">
+                                                <div class="form-group">
+                                                <label for="utm_source_input_1" class="form-label">utm source<span class="text-danger"> *</span></label>
+                                                <select class="form-select" id="utm_source_input_1" aria-label="Default select example" name="utm_source" required>
+                                                <option value="" disabled selected>Select utm_source</option>
+                                                {% for utm_source_choice in utm_source_choices %}
+                                                <option value="{{utm_source_choice}}">{{utm_source_choice}}</option>
+                                                {% endfor %}
+                                                </select>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                                </div> -->
+                                            <!-- <div class="col-sm-6">
+                                                <div class="form-group">
+                                                <label for="code_placement_input_1" class="form-label">Code Placement<span class="text-danger"> *</span></label>
+                                                <select class="form-select" id="code_placement_input_1" aria-label="Default select example" name="code_placement" onchange="utm_content_value_add()" required>
+                                                <option value="" disabled selected>Select Code Placement</option>
+                                                {% for code_placement_choice in code_placement_choices %}
+                                                <option value="{{code_placement_choice.acronym}}">{{code_placement_choice.value}}</option>
+                                                {% endfor %}
+                                                </select>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                                </div> -->
+                                        </div>
+                                        <div class="row">
+                                            <!-- <div class="col-sm-3">
+                                                <div class="form-group">
+                                                <label for="utm_medium_input_1" class="form-label">utm medium<span class="text-danger"> *</span></label>
+                                                <select class="form-select" id="utm_medium_input_1" aria-label="Default select example" name="utm_medium" required>
+                                                <option value="" disabled selected>Select utm medium</option>
+                                                {% for utm_medium_choice in utm_medium_choices %}
+                                                <option value="{{utm_medium_choice}}">{{utm_medium_choice}}</option>
+                                                {% endfor %}
+                                                </select>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                                </div> -->
+                                            <!-- <div class="col-sm-3">
+                                                <div class="form-group">
+                                                <label for="utm_campaign_input_1" class="form-label">utm campaign<span class="text-danger"> *</span></label>
+                                                <input type="text" class="form-control" id="utm_campaign_input_1" name="utm_campaign" readonly>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                                </div> -->
+                                            <!-- <div class="col-sm-3">
+                                                <div class="form-group">
+                                                <label for="utm_term_input_1" class="form-label">utm term</label>
+                                                <input type="text" class="form-control" id="utm_term_input_1" name="utm_term" onkeyup="remove_space_and_make_lower_case_value(this);">
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                                </div> -->
+                                            <!-- <div class="col-sm-3">
+                                                <div class="form-group">
+                                                <label for="utm_content_input_1" class="form-label">utm content<span class="text-danger"> *</span></label>
+                                                <input type="text" class="form-control" id="utm_content_input_1" name="utm_content" readonly>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                                </div> -->
+                                        </div>
+                                        <div class="row">
+                                            <!-- <div class="col-sm-6">
+                                                <div class="form-group">
+                                                <label for="utm_tagged_link_input_1" class="form-label">Final tagged landing page url<span class="text-danger"> *</span></label>
+                                                <input type="url" class="form-control" id="utm_tagged_link_input_1" name="utm_tagged_link" readonly>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                                </div> -->
+                                            <!-- <div class="col-sm-6">
+                                                <div class="form-group">
+                                                <label for="ga_profile_id_input_1" class="form-label">GA Profile ID<span class="text-danger"> *</span></label>
+                                                <input type="text" class="form-control" id="ga_profile_id_input_1" name="ga_profile_id" required>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                                </div> -->
+                                            <!-- <div class="col-sm-6">
+                                                <div class="form-group">
+                                                <label for="asset_image_with_qr_code_input_1" class="form-label">Asset image with QR code</label>
+                                                <input type="file" class="form-control" id="asset_image_with_qr_code_input_1" name="asset_image_with_qr_code">
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                            </div> -->
+                                            <!-- <div class="col-sm-6">
+                                                <div class="form-group">
+                                                <label for="code_url_input_1" class="form-label">Code URL<span class="text-danger"> *</span></label>
+                                                <input type="url" class="form-control" id="code_url_input_1" name="code_url" required>
+                                                <small class="cp-form-error">Please Enter ****</small>
+                                                </div>
+                                                </div> -->
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12">
+                                        <div class="form-group">
+                                            <!-- <button type="button" class="btn cp-btn-sec-small" id="add_more_market_btn">
+                                                Add Another Campaign
+                                            </button> -->
+                                            <button type="button" class="btn cp-btn-danger-small" id="remove_market_btn" hidden>
+                                            Remove Campaign
+                                            </button>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    <div class="col-sm-12">
+                                    <input type="submit" value="Submit" class="btn cp-primary-btn" onclick="utm_tagged_link_value_add();">
+                                    </div>
+                                </div>
+                              </form>
+                           </div>
+                        </div>
+                     </div>
+                </section> 
+            </div>
+
+        {% endblock %}
+    {% endblock %}
+
+    {% block custom_js %}
+        <script>
+            function hidden_fields_show(field) {
+                var field_hidden_div = document.querySelector(`#${field.id}_hidden`);
+                var field_hidden_input = field_hidden_div.querySelector('input[type=text]');
+                if (field.value === 'other'){
+                    field_hidden_div.hidden = false
+                    field_hidden_input.required = true
+                }
+                else{
+                    field_hidden_div.hidden = true
+                    field_hidden_input.value = ""
+                    field_hidden_input.required = false
+                }
+            };
+
+            function fix_maxlength(field){
+                field.value = field.value.slice(0,field.maxLength);
+            };
+
+            function add_brand_code(local_brand_input){
+                var local_brand_number = local_brand_input.id.split('_').pop()
+                var local_brands = {{ local_brands  | local_brands_queryset_as_json }}
+                var brand_code_input = document.querySelector(`#brand_code_input_${local_brand_number}`);
+                brand_code_input.value = ""
+                if (local_brand_input.value === 'other'){
+                    brand_code_input.placeholder = "Enter Brand Code"
+                    brand_code_input.readOnly = false
+                }
+                else {
+                    for (var i = 0; i < local_brands.length; i++){
+                        if (local_brand_input.value == local_brands[i].pk){
+                            if (local_brands[i].brand_code != undefined){
+                                brand_code_input.value = local_brands[i].brand_code
+                                brand_code_input.readOnly = true
+                            }
+                        }
+                    }
+                    utm_campaign_value_add()
+                }
+            };
+
+            function add_iso_code(market_input){
+                market_input_number = market_input.id.split('_').pop()
+                var market_selected_options = market_input.selectedOptions;
+                var iso_code_input = document.querySelector(`#iso_input_${market_input_number}`);
+                var iso_code_value = ''
+                var markets = {{ markets | queryset_as_json }}
+                for (var i = 0; i < markets.length; i++){
+                    for (var j = 0; j < market_selected_options.length; j++){
+                        if (markets[i].market_name == market_selected_options[j].value){
+                            iso_code_value += markets[i].market_iso_code + ','
+                        }
+                    }
+                }
+                iso_code_input.value = iso_code_value.slice(0,-1)
+                utm_campaign_value_add();
+            };
+
+            function upc_ean_gtin_prefix_add(upc_ean_gtin_input){
+                if (upc_ean_gtin_input.value.length < 14){
+                    var required_zeros = 14 - upc_ean_gtin_input.value.length
+                    var zero_string = ''
+                    for (var i = 0; i < required_zeros; i++){
+                        zero_string+='0'
+                    }
+                    upc_ean_gtin_input.value = zero_string + upc_ean_gtin_input.value
+                }
+            };
+
+            function remove_space_and_make_lower_case_value(str_input){
+                str_input.value = str_input.value.toLowerCase();
+                str_input.value = str_input.value.split(' ')[0]
+            };
+
+            function utm_campaign_value_add(){
+                var brand_code_inputs = document.querySelectorAll('.brand_code_inputs');
+                // for (var i = 0; i < brand_code_inputs.length; i++){
+                //     var brand_code_input = brand_code_inputs[i].value
+                //     // var tag_name_input = document.querySelector('#tag1_input').value
+                // }
+                // var market_data_inputs = document.querySelectorAll('.market_data_box')
+                // for (var i = 1; i < market_data_inputs.length+1; i++){
+                //     var iso_input = document.querySelector(`#iso_input_${i}`).value
+                //     var utm_campaign_input = document.querySelector(`#utm_campaign_input_${i}`)
+                //     utm_campaign_input.value = `${campaign_name_input}-${brand_code_input}-${iso_input}`
+                // }
+            };
+
+            function utm_content_value_add(){
+                var additional_data_inputs = document.querySelectorAll('.additional_data_box')
+                for (var i = 1; i < additional_data_inputs.length+1; i++){
+                    var activity_type = document.querySelector(`#activity_type_input_${i}`)
+                    if (activity_type.value!=='other'){
+                        // var activity_type = document.querySelector(`#activity_type_input_${i}`)
+                        var activity_type_value = activity_type.options[activity_type.selectedIndex].text
+                    }
+                    else{
+                        var activity_type_name_input = document.querySelector(`#activity_type_name_input_${i}`)
+                        var activity_type_value = activity_type_name_input.value
+                    };
+                    var code_placement_input = document.querySelector(`#code_placement_input_${i}`).value
+                    var utm_content_input = document.querySelector(`#utm_content_input_${i}`)
+                    utm_content_input.value = `${activity_type_value}-${code_placement_input}`
+                }
+            };
+
+            function utm_tagged_link_value_add(){
+                var market_data_inputs = document.querySelectorAll('.market_data_box')
+                for (var i = 1; i < market_data_inputs.length+1; i++){
+                    var redirect_url = document.querySelector(`#redirect_url_input_${i}`).value
+                    var utm_campaign = document.querySelector(`#utm_campaign_input_${i}`).value
+                    var utm_content = document.querySelector(`#utm_content_input_${i}`).value
+                    var utm_tagged_link = document.querySelector(`#utm_tagged_link_input_${i}`)
+                    var utm_source = document.querySelector('#utm_source_input').value
+                    var utm_medium = document.querySelector('#utm_medium_input').value
+                    var utm_term = document.querySelector('#utm_term_input').value
+                    var utm_tagged_link_value = `${redirect_url}?utm_source=${utm_source}&utm_medium=${utm_medium}&utm_campaign=${utm_campaign}&utm_content=${utm_content}`
+                    if (utm_term.length != 0){
+                        utm_tagged_link_value+=`&utm_term=${utm_term}`
+                    }
+                    utm_tagged_link_value = utm_tagged_link_value.split(' ').join('_')
+                    utm_tagged_link.value = utm_tagged_link_value
+                }
+            };
+
+            function allow_integer_input(e){
+                var allowedChars = '0123456789';
+                function contains(stringValue, charValue) {
+                    return stringValue.indexOf(charValue) > -1;
+                }
+                var invalidKey = e.key.length === 1 && !contains(allowedChars, e.key)
+                || e.key === '.' && contains(e.target.value, '.');
+                invalidKey && e.preventDefault();
+            };
+
+            function show_incentive_input_toggle_button(option_to_purchase_input_toggle_button){
+                counter_arr = option_to_purchase_input_toggle_button.id.split('_')
+                var counter_number = counter_arr[counter_arr.length - 1]
+                // alert(counter_number)
+                var incentive_input_toggle_button_box = document.querySelector(`#if_yes_is_there_an_incentive_to_purchase_box_${counter_number}`);
+                var incentive_input_toggle_button = document.querySelector(`#if_yes_is_there_an_incentive_to_purchase_input_${counter_number}`);
+                if (option_to_purchase_input_toggle_button.checked == true){
+                    incentive_input_toggle_button_box.hidden = false
+                    incentive_input_toggle_button.required = true
+                }
+                else{
+                    incentive_input_toggle_button_box.hidden = true
+                    incentive_input_toggle_button.required = false
+                }
+            };
+
+            const addMoreButton = document.querySelector('#add_more_market_btn');
+            const removebutton = document.querySelector('#remove_market_btn');
+            var counter = 1;
+            addMoreButton.addEventListener('click', () => {
+                counter++;
+                const newFields = `
+                <div class="additional_data_box" id="additional_data_box_${counter}">
+                <div class="row">
+                    <div class="col-sm-3">
+                        <div class="form-group">
+                            <label for="division_input_${counter}" class="form-label">Division<span class="text-danger"> *</span></label>
+                            <select class="form-select" id="division_input_${counter}" aria-label="Default select example" name="division" required>
+                                <option value="" disabled selected>Select Division</option>
+                                {% for division in divisions %}
+                                    <option value="{{division.id}}">{{division.division}}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="cp-form-error">Please Enter ****</small>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="form-group">
+                            <label for="category_input_${counter}" class="form-label">Category<span class="text-danger"> *</span></label>
+                            <select class="form-select" id="category_input_${counter}" aria-label="Default select example" name="category" required>
+                                <option value="" disabled selected>Select Category</option>
+                                {% for category_choice in category_choices %}
+                                    <option value="{{category_choice}}">{{category_choice}}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="cp-form-error">Please Enter ****</small>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="form-group">
+                            <label for="market_input_${counter}" class="form-label">Market<span class="text-danger"> *</span></label>
+                            <select class="form-select" id="market_input_${counter}" aria-label="Default select example" name="market" required>
+                                <option value="" disabled selected>Select Market</option>
+                                {% for market in markets %}
+                                    <option value="{{market.market_name}}">{{market.market_name}}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="cp-form-error">Please Enter ****</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-3">
+                        <div class="form-group">
+                            <label for="activity_type_input_${counter}" class="form-label">Activity Type<span class="text-danger"> *</span></label>
+                            <select class="form-select" id="activity_type_input_${counter}" onclick="hidden_fields_show(this);" aria-label="Default select example" name="activity_type" required>
+                                <option value="" disabled selected>Select Activity Type</option>
+                                {% for activity in activities %}
+                                    <option value="{{activity.id}}">{{activity.experience_type}}</option>
+                                {% endfor %}
+                                <option value="other">Other</option>
+                            </select>
+                            <small class="cp-form-error">Please Enter ****</small>
+                        </div>
+                    </div>
+                    <div class="col-sm-3" id="activity_type_input_${counter}_hidden" hidden>
+                        <div class="form-group">
+                            <label for="activity_type_name_input_${counter}" class="form-label">Activty Type Name<span class="text-danger"> *</span></label>
+                            <input type="text" class="form-control" id="activity_type_name_input_${counter}" name="activity_type_name" oninput="this.value=this.value.split(' ')[0]">
+                            <small class="cp-form-error">Please Enter ****</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group cp-form-switch">
+                            <div class="cp-form-switch-inner">
+                                <label class="form-label">Is landing page on an external third party site?</label>
+                                <label class="switch">
+                                    <input type="checkbox" class="is_landing_page_on_an_external_third_party_site_input" id="is_landing_page_on_an_external_third_party_site_input_${counter}" name="is_landing_page_on_an_external_third_party_site">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <small class="cp-form-error">Please Enter ****</small>
+                        </div>
+                        <div class="form-group cp-form-switch">
+                            <div class="cp-form-switch-inner">
+                                <label class="form-label">Does landing page include 1PD capture / sign-up?</label>
+                                <label class="switch">
+                                    <input type="checkbox" class="does_landing_page_include_1pd_capture_sign-up_input" id="does_landing_page_include_1pd_capture_sign-up_input_${counter}" name="does_landing_page_include_1pd_capture_or_signup">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <small class="cp-form-error">Please Enter ****</small>
+                        </div>
+                        <div class="form-group cp-form-switch">
+                            <div class="cp-form-switch-inner">
+                                <label class="form-label">Does landing page include option to purchase?</label>
+                                <label class="switch">
+                                    <input type="checkbox" class="does_landing_page_include_option_to_purchase_input" 
+                                    id="does_landing_page_include_option_to_purchase_input_${counter}" name="does_landing_page_include_option_to_purchase" oninput="show_incentive_input_toggle_button(this);">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <small class="cp-form-error">Please Enter ****</small>
+                        </div>
+                        <div class="form-group cp-form-switch" id="if_yes_is_there_an_incentive_to_purchase_box_${counter}" hidden>
+                            <div class="cp-form-switch-inner">
+                                <label class="form-label">If yes, is there an incentive to purchase?</label>
+                                <label class="switch">
+                                    <input type="checkbox" class="if_yes_is_there_an_incentive_to_purchase_input" id="if_yes_is_there_an_incentive_to_purchase_input_${counter}" name="if_yes_is_there_an_incentive_to_purchase">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <small class="cp-form-error">Please Enter ****</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-3">
+                        <div class="form-group">
+                            <label for="planned_launch_date_input_${counter}" class="form-label">Planned launch date<span class="text-danger"> *</span></label>
+                            <input type="date" class="form-control" id="planned_launch_date_input_${counter}" name="planned_launch_date" required>
+                            <small class="cp-form-error">Please Enter ****</small>
+                        </div>
+                    </div>
+                </div>        
+            </div>`;
+                addMoreButton.insertAdjacentHTML('beforebegin', newFields);
+                removebutton.hidden = false
+                var number_inputs = document.querySelectorAll('input[type=number]')
+                for (var i = 0; i < number_inputs.length; i++){
+                    number_inputs[i].addEventListener("keypress", allow_integer_input)
+                }
+
+                var default_market_activiy_type_input = document.querySelector('#activity_type_input_1');
+                var activiy_type_input = document.querySelector(`#activity_type_input_${counter}`);
+                if (default_market_activiy_type_input.value != 'other'){
+                    activiy_type_input.value = default_market_activiy_type_input.value
+                }
+                // utm_content_value_add();
+            });
+
+            removebutton.addEventListener('click', () => {
+                if (counter > 1){
+                    var additional_data_box = document.querySelector(`#additional_data_box_${counter}`);
+                    additional_data_box.outerHTML = ""
+                    counter--
+                }
+                if (counter == 1 && removebutton.hidden == false){
+                    removebutton.hidden = true
+                }
+            });
+
+            // $(document).ready(function() {
+                // $('#markets_input').select2();
+                // $('#division_input').select2();
+                // $('#local_brand_input').select2();
+                // $('#activity_type_input').select2();
+            // });
+            var number_inputs = document.querySelectorAll('input[type=number]')
+            for (var i = 0; i < number_inputs.length; i++){
+                number_inputs[i].addEventListener("keypress", allow_integer_input)
+            }
+        </script>
+        <script>
+            const elements1 =  document.querySelectorAll('.is_landing_page_on_an_external_third_party_site_input')
+            elements1.forEach(function(element1) {
+                element1.addEventListener('change', (e) => {
+                        this.checkboxValue = e.target.checked ? 'on' : 'off';
+                        this.value = this.checkboxValue;
+                        console.log(this.value)
+                    });
+            });
+            const elements2 =  document.querySelectorAll('.does_landing_page_include_1pd_capture_sign-up_input')
+            elements2.forEach(function(element2) {
+                element2.addEventListener('change', (e) => {
+                        this.checkboxValue = e.target.checked ? 'on' : 'off';
+                        this.value = this.checkboxValue;
+                        console.log(this.value)
+                    });
+            });
+            const elements3 =  document.querySelectorAll('.does_landing_page_include_option_to_purchase_input')
+            elements3.forEach(function(element3) {
+                element3.addEventListener('change', (e) => {
+                        this.checkboxValue = e.target.checked ? 'on' : 'off';
+                        this.value = this.checkboxValue;
+                        console.log(this.value)
+                    });
+            });
+            const elements4 =  document.querySelectorAll('.if_yes_is_there_an_incentive_to_purchase_input')
+            elements4.forEach(function(element4) {
+                element4.addEventListener('change', (e) => {
+                        this.checkboxValue = e.target.checked ? 'on' : 'off';
+                        this.value = this.checkboxValue;
+                        console.log(this.value)
+                    });
+            });
+            // document.querySelectorAll('.does_landing_page_include_1pd_capture_sign-up_input').addEventListener('change', (e) => {
+            // this.checkboxValue = e.target.checked ? 'on' : 'off';
+            // this.value = this.checkboxValue;
+            // console.log(this.value)
+            // })
+            // document.querySelectorAll('.does_landing_page_include_option_to_purchase_input').addEventListener('change', (e) => {
+            //     this.checkboxValue = e.target.checked ? 'on' : 'off';
+            //     this.value = this.checkboxValue;
+            //     // console.log(this.checkboxValue)
+            //     console.log(this.value)
+            //     });
+            // document.querySelectorAll('.if_yes_is_there_an_incentive_to_purchase_input').addEventListener('change', (e) => {
+            // this.checkboxValue = e.target.checked ? 'on' : 'off';
+            // this.value = this.checkboxValue;
+            // console.log(this.value)
+            // });
+        </script>
+    {% endblock %}
+{% endblock %}
