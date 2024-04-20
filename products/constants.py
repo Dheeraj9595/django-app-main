@@ -18,3 +18,5 @@ CODE_POSITION_CHOICES = (
 )
 QR_CODE_BLOB_STORAGE_CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=qrdownloadtest;AccountKey=KsOMid6XarBdmRDWFPkWoXb1sOoNEj+JTNosCNJHZDOCeInKhJloIt807J+P/4lXCIPzYTLGvvQd+AStVddepQ==;EndpointSuffix=core.windows.net"
 QR_CODE_BLOB_STORAGE_CONTAINER_NAME = "qrcodes"
+
+#dev 
